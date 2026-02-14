@@ -1,54 +1,49 @@
-💰 Controle Financeiro Inteligente
+# 💰 Controle Financeiro Inteligente
 
 Aplicativo móvel desenvolvido para auxiliar no gerenciamento de finanças pessoais de forma prática, organizada e estratégica.
 
 O sistema permitirá que o usuário registre receitas e despesas, organize por categorias, acompanhe metas financeiras e visualize relatórios com gráficos comparativos mensais.
 
-📱 Tipo de Aplicação
+---
 
-Aplicativo Híbrido (Mobile)
+## 📱 Tipo de Aplicação
 
-🚀 Tecnologias Utilizadas
-🔹 Front-End (Mobile)
+**Aplicativo Híbrido (Mobile)**
 
-React Native
+---
 
-Bibliotecas de componentes UI
+## 🚀 Tecnologias Utilizadas
 
-Bibliotecas de gráficos
+### 🔹 Front-End (Mobile)
 
-🔹 Back-End
+- React Native  
+- Bibliotecas de componentes UI  
+- Bibliotecas de gráficos  
 
-Node.js
+### 🔹 Back-End
 
-Express
+- Node.js  
+- Express  
+- API REST  
 
-API REST
+### 🔹 Banco de Dados
 
-🔹 Banco de Dados
+- PostgreSQL  
 
-PostgreSQL
+### 🔹 Infraestrutura
 
-🔹 Infraestrutura
+- VPS (Hostinger)  
+- Nginx  
+- GitHub Actions (CI/CD)  
 
-VPS (Hostinger)
+---
 
-Nginx
+## 🎯 Funcionalidades Principais
 
-GitHub Actions (CI/CD)
-
-🎯 Funcionalidades Principais
-
-Cadastro de usuários
-
-Registro de receitas e despesas
-
-Organização por categorias
-
-Definição de metas financeiras
-
-Controle de orçamento mensal
-
-Relatórios gráficos
-
-Comparativo de gastos por período
+- Cadastro de usuários  
+- Registro de receitas e despesas  
+- Organização por categorias  
+- Definição de metas financeiras  
+- Controle de orçamento mensal  
+- Relatórios gráficos  
+- Comparativo de gastos por período  
