@@ -12,3 +12,145 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+enum RecurrenceFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts              Account[]
+  categories            Category[]
+  transactions          Transaction[]
+  budgets               Budget[]
+  creditCards           CreditCard[]
+  recurringTransactions RecurringTransaction[]
+}
+
+model Account {
+  id        String   @id @default(uuid())
+  name      String
+  balance   Decimal  @default(0.0)
+  type      String // checking, savings, wallet
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  transactionsFrom Transaction[] @relation("fromAccount")
+  transactionsTo   Transaction[] @relation("toAccount")
+}
+
+model CreditCard {
+  id         String   @id @default(uuid())
+  name       String
+  limit      Decimal
+  closingDay Int
+  dueDay     Int
+  createdAt  DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  transactions Transaction[]
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  icon      String?
+  color     String?
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  transactions Transaction[]
+  budgets      Budget[]
+}
+
+model Transaction {
+  id          String          @id @default(uuid())
+  title       String
+  description String?
+  amount      Decimal
+  type        TransactionType
+  date        DateTime
+  createdAt   DateTime        @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  accountFromId String?
+  accountFrom   Account? @relation("fromAccount", fields: [accountFromId], references: [id])
+
+  accountToId String?
+  accountTo   Account? @relation("toAccount", fields: [accountToId], references: [id])
+
+  creditCardId String?
+  creditCard   CreditCard? @relation(fields: [creditCardId], references: [id])
+
+  installments Installment[]
+
+  recurringId String?
+  recurring   RecurringTransaction? @relation(fields: [recurringId], references: [id])
+}
+
+model Installment {
+  id      String   @id @default(uuid())
+  number  Int
+  total   Int
+  amount  Decimal
+  dueDate DateTime
+  paid    Boolean  @default(false)
+
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+}
+
+model Budget {
+  id     String  @id @default(uuid())
+  amount Decimal
+  month  Int
+  year   Int
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+}
+
+model RecurringTransaction {
+  id        String              @id @default(uuid())
+  title     String
+  amount    Decimal
+  type      TransactionType
+  frequency RecurrenceFrequency
+  startDate DateTime
+  endDate   DateTime?
+  active    Boolean             @default(true)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  transactions Transaction[]
+}
