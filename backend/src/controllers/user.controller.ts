@@ -5,9 +5,9 @@ const userService = new UserService();
 
 export class UserController {
   async create(req: Request, res: Response) {
-    const { name, email } = req.body;
+    const { name, email, password } = req.body;
 
-    const user = await userService.create(name, email);
+    const user = await userService.create(name, email, password);
 
     return res.status(201).json(user);
   }

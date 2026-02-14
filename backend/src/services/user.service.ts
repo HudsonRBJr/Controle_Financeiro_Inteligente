@@ -1,9 +1,9 @@
 import { prisma } from "../prisma/client";
 
 export class UserService {
-    async create(name: string, email: string) {
+    async create(name: string, email: string, password: string) {
         return prisma.user.create({
-            data: { name, email }
+            data: { name, email, password }
         });
     }
 
