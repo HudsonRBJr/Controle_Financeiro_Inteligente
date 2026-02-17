@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Documentação da API — Controle Financeiro Inteligente</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0f1419;
+        --surface: #1a2332;
+        --surface-hover: #243044;
+        --border: #2d3a4f;
+        --text: #e6edf3;
+        --text-muted: #8b949e;
+        --accent: #58a6ff;
+        --accent-dim: #388bfd;
+        --green: #3fb950;
+        --orange: #d29922;
+        --red: #f85149;
+        --purple: #a371f7;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "DM Sans", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.65;
+        margin: 0;
+        min-height: 100vh;
+      }
+
+      .layout {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* Sidebar / Nav */
+      .nav {
+        width: 280px;
+        flex-shrink: 0;
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        padding: 1.5rem 0;
+        position: sticky;
+        top: 0;
+        max-height: 100vh;
+        overflow-y: auto;
+      }
+
+      .nav-logo {
+        padding: 0 1.5rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 1rem;
+      }
+
+      .nav-logo h1 {
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0;
+        color: var(--text);
+      }
+
+      .nav-logo p {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        margin: 0.25rem 0 0;
+      }
+
+      .nav a {
+        display: block;
+        padding: 0.5rem 1.5rem;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: color 0.15s, background 0.15s;
+      }
+
+      .nav a:hover {
+        color: var(--accent);
+        background: var(--surface-hover);
+      }
+
+      .nav .nav-section {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        padding: 1rem 1.5rem 0.5rem;
+      }
+
+      /* Main content */
+      .main {
+        flex: 1;
+        padding: 2rem 3rem 4rem;
+        max-width: 52rem;
+      }
+
+      .main h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 2.5rem 0 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+        color: var(--text);
+      }
+
+      .main h2:first-of-type {
+        margin-top: 0;
+      }
+
+      .main h3 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin: 1.5rem 0 0.75rem;
+        color: var(--text);
+      }
+
+      .main p {
+        margin: 0 0 1rem;
+        color: var(--text-muted);
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .card h3 {
+        margin-top: 0;
+        margin-bottom: 0.75rem;
+      }
+
+      .endpoint {
+        display: flex;
+        align-items: baseline;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      .endpoint:last-child {
+        margin-bottom: 0;
+      }
+
+      .method {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        min-width: 3.25rem;
+        text-align: center;
+      }
+
+      .method.get {
+        background: rgba(56, 139, 253, 0.2);
+        color: var(--accent-dim);
+      }
+
+      .method.post {
+        background: rgba(63, 185, 80, 0.2);
+        color: var(--green);
+      }
+
+      .method.put {
+        background: rgba(210, 153, 34, 0.2);
+        color: var(--orange);
+      }
+
+      .method.delete {
+        background: rgba(248, 81, 73, 0.2);
+        color: var(--red);
+      }
+
+      .path {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.875rem;
+        color: var(--text);
+      }
+
+      .desc {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        margin: 0 0 0 4rem;
+        padding-left: 0;
+      }
+
+      .endpoint-block {
+        margin-bottom: 1.5rem;
+      }
+
+      pre {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.8125rem;
+        background: #0d1117;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        overflow-x: auto;
+        margin: 0.75rem 0 1.25rem;
+        color: var(--text);
+      }
+
+      code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.8125rem;
+        background: var(--surface-hover);
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+        color: var(--accent);
+      }
+
+      .badge {
+        font-size: 0.6875rem;
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+        background: var(--surface-hover);
+        color: var(--text-muted);
+        margin-left: 0.5rem;
+      }
+
+      .badge.auth {
+        background: rgba(163, 113, 247, 0.2);
+        color: var(--purple);
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      ul {
+        margin: 0 0 1rem;
+        padding-left: 1.25rem;
+        color: var(--text-muted);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+        margin: 1rem 0;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      th {
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+
+      .intro {
+        font-size: 1.0625rem;
+        color: var(--text);
+        margin-bottom: 2rem;
+      }
+
+      @media (max-width: 900px) {
+        .layout {
+          flex-direction: column;
+        }
+
+        .nav {
+          width: 100%;
+          max-height: none;
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .main {
+          padding: 1.5rem 1.25rem 3rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <nav class="nav">
+        <div class="nav-logo">
+          <h1>Controle Financeiro Inteligente</h1>
+          <p>Documentação da API REST</p>
+        </div>
+        <div class="nav-section">Geral</div>
+        <a href="#inicio">Início</a>
+        <a href="#base">URL base e formato</a>
+        <a href="#auth">Autenticação (JWT)</a>
+        <a href="#swagger">Swagger UI</a>
+        <div class="nav-section">Recursos</div>
+        <a href="#users">Usuários</a>
+        <a href="#recurring">Transações recorrentes</a>
+        <a href="#budgets">Orçamentos</a>
+        <a href="#installments">Parcelas</a>
+        <div class="nav-section">Utilitários</div>
+        <a href="#health">Health &amp; Hello</a>
+      </nav>
+
+      <main class="main">
+        <h2 id="inicio">Início</h2>
+        <p class="intro">
+          API REST do sistema <strong>Controle Financeiro Inteligente</strong>.
+          Todas as respostas são em JSON. Endpoints protegidos exigem o header
+          <code>Authorization</code> com o token JWT (ou apenas o token).
+        </p>
+
+        <h2 id="base">URL base e formato</h2>
+        <div class="card">
+          <p><strong>Base URL (desenvolvimento):</strong></p>
+          <pre>http://localhost:3000</pre>
+          <p>
+            Todas as requisições devem usar <code>Content-Type: application/json</code>
+            quando houver body. Respostas de erro seguem o formato:
+          </p>
+          <pre>{
+  "message": "Descrição do erro"
+}</pre>
+        </div>
+
+        <h2 id="auth">Autenticação (JWT)</h2>
+        <p>
+          Endpoints marcados com <span class="badge auth">requer token</span>
+          precisam do usuário autenticado. Primeiro faça login para obter o token.
+        </p>
+
+        <div class="card">
+          <h3>POST /auth/login</h3>
+          <p>Retorna o token JWT e os dados do usuário (sem senha).</p>
+          <p><strong>Body (JSON):</strong></p>
+          <pre>{
+  "email": "usuario@exemplo.com",
+  "password": "sua_senha"
+}</pre>
+          <p><strong>Resposta 200:</strong></p>
+          <pre>{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": "uuid",
+    "name": "Nome",
+    "email": "usuario@exemplo.com",
+    "createdAt": "...",
+    "updatedAt": "..."
+  }
+}</pre>
+          <p><strong>Uso do token:</strong></p>
+          <pre>Authorization: Bearer eyJhbGciOiJIUzI1NiIs...</pre>
+          <p>Ou apenas o token no header:</p>
+          <pre>Authorization: eyJhbGciOiJIUzI1NiIs...</pre>
+          <table>
+            <tr>
+              <th>Código</th>
+              <th>Descrição</th>
+            </tr>
+            <tr><td>200</td><td>Login realizado com sucesso</td></tr>
+            <tr><td>400</td><td>E-mail e senha são obrigatórios</td></tr>
+            <tr><td>401</td><td>Credenciais inválidas</td></tr>
+          </table>
+        </div>
+
+        <h2 id="swagger">Swagger UI</h2>
+        <p>
+          Para testar a API de forma interativa, use o Swagger em
+          <a href="/docs" target="_blank" rel="noopener">/docs</a>.
+        </p>
+
+        <h2 id="users">Usuários</h2>
+        <p>Cadastro e gestão de usuários. Apenas <strong>POST /users</strong> é público.</p>
+
+        <div class="card endpoint-block">
+          <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="path">/users</span>
+          </div>
+          <p class="desc">Criar usuário (público). Body: name, email, password.</p>
+          <pre>{
+  "name": "Fulano",
+  "email": "fulano@exemplo.com",
+  "password": "123456"
+}</pre>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/users</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Listar todos os usuários.</p>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/users/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Buscar usuário por ID.</p>
+          <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="path">/users/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Atualizar usuário (name, email, password — parciais).</p>
+          <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="path">/users/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Remover usuário.</p>
+        </div>
+
+        <h2 id="recurring">Transações recorrentes</h2>
+        <p>Todas as rotas exigem autenticação. O <code>userId</code> é definido pelo token.</p>
+
+        <div class="card endpoint-block">
+          <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="path">/recurring-transactions</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Criar transação recorrente.</p>
+          <pre>{
+  "title": "Assinatura Streaming",
+  "amount": 49.9,
+  "type": "EXPENSE",
+  "frequency": "MONTHLY",
+  "startDate": "2026-03-01T00:00:00.000Z",
+  "endDate": null,
+  "active": true
+}</pre>
+          <p><strong>type:</strong> INCOME | EXPENSE | TRANSFER</p>
+          <p><strong>frequency:</strong> DAILY | WEEKLY | MONTHLY | YEARLY</p>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/recurring-transactions</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Listar transações recorrentes do usuário.</p>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/recurring-transactions/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Buscar por ID.</p>
+          <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="path">/recurring-transactions/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Atualizar (campos parciais).</p>
+          <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="path">/recurring-transactions/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Remover transação recorrente.</p>
+        </div>
+
+        <h2 id="budgets">Orçamentos (Budget)</h2>
+        <p>Orçamentos por categoria, mês e ano. Todas as rotas exigem token. Listagem e busca filtram pelo usuário autenticado.</p>
+
+        <div class="card endpoint-block">
+          <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="path">/budgets</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Criar orçamento.</p>
+          <pre>{
+  "amount": 1500,
+  "month": 3,
+  "year": 2026,
+  "categoryId": "uuid-da-categoria"
+}</pre>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/budgets</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Listar orçamentos do usuário.</p>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/budgets/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Buscar orçamento por ID.</p>
+          <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="path">/budgets/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Atualizar (amount, month, year, categoryId — parciais).</p>
+          <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="path">/budgets/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Remover orçamento.</p>
+        </div>
+
+        <h2 id="installments">Parcelas (Installment)</h2>
+        <p>Parcelas vinculadas a transações. Todas as rotas exigem token. Só são listadas/alteradas parcelas de transações do usuário.</p>
+
+        <div class="card endpoint-block">
+          <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="path">/installments</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Criar parcela.</p>
+          <pre>{
+  "number": 1,
+  "total": 12,
+  "amount": 99.9,
+  "dueDate": "2026-03-15T00:00:00.000Z",
+  "paid": false,
+  "transactionId": "uuid-da-transacao"
+}</pre>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/installments</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Listar parcelas das transações do usuário.</p>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/installments/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Buscar parcela por ID.</p>
+          <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="path">/installments/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Atualizar (number, total, amount, dueDate, paid — parciais).</p>
+          <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="path">/installments/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Remover parcela.</p>
+        </div>
+
+        <h2 id="health">Utilitários</h2>
+        <div class="card endpoint-block">
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/health</span>
+          </div>
+          <p class="desc">Health check. Resposta: <code>{"message":"OK"}</code></p>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/hello</span>
+          </div>
+          <p class="desc">Exemplo simples. Resposta: <code>{"message":"Hello World"}</code></p>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

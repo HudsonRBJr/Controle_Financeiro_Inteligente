@@ -1,9 +1,12 @@
 /// <reference path="./types/swagger-ui-express.d.ts" />
+import path from "path";
 import express from "express";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import userRoutes from "./routes/user.routes";
 import recurringTransactionRoutes from "./routes/recurring-transaction.routes";
+import budgetRoutes from "./routes/budget.routes";
+import installmentRoutes from "./routes/installment.routes";
 import authRoutes from "./routes/auth.routes";
 
 export const app = express();
@@ -225,6 +228,120 @@ const swaggerDocument = {
         },
       },
     },
+    "/budgets": {
+      get: {
+        summary: "Listar orçamentos",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          "200": { description: "Lista de orçamentos retornada com sucesso" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+      post: {
+        summary: "Criar orçamento",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          "201": { description: "Orçamento criado com sucesso" },
+          "400": { description: "Dados inválidos" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+    },
+    "/budgets/{id}": {
+      get: {
+        summary: "Buscar orçamento por ID",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: "id", in: "path", required: true, schema: { type: "string" } },
+        ],
+        responses: {
+          "200": { description: "Orçamento encontrado" },
+          "404": { description: "Orçamento não encontrado" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+      put: {
+        summary: "Atualizar orçamento",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: "id", in: "path", required: true, schema: { type: "string" } },
+        ],
+        responses: {
+          "200": { description: "Orçamento atualizado com sucesso" },
+          "404": { description: "Orçamento não encontrado" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+      delete: {
+        summary: "Remover orçamento",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: "id", in: "path", required: true, schema: { type: "string" } },
+        ],
+        responses: {
+          "200": { description: "Orçamento removido com sucesso" },
+          "404": { description: "Orçamento não encontrado" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+    },
+    "/installments": {
+      get: {
+        summary: "Listar parcelas",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          "200": { description: "Lista de parcelas retornada com sucesso" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+      post: {
+        summary: "Criar parcela",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          "201": { description: "Parcela criada com sucesso" },
+          "400": { description: "Dados inválidos" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+    },
+    "/installments/{id}": {
+      get: {
+        summary: "Buscar parcela por ID",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: "id", in: "path", required: true, schema: { type: "string" } },
+        ],
+        responses: {
+          "200": { description: "Parcela encontrada" },
+          "404": { description: "Parcela não encontrada" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+      put: {
+        summary: "Atualizar parcela",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: "id", in: "path", required: true, schema: { type: "string" } },
+        ],
+        responses: {
+          "200": { description: "Parcela atualizada com sucesso" },
+          "404": { description: "Parcela não encontrada" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+      delete: {
+        summary: "Remover parcela",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: "id", in: "path", required: true, schema: { type: "string" } },
+        ],
+        responses: {
+          "200": { description: "Parcela removida com sucesso" },
+          "404": { description: "Parcela não encontrada" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+    },
   },
 };
 
@@ -234,191 +351,15 @@ app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/recurring-transactions", recurringTransactionRoutes);
+app.use("/budgets", budgetRoutes);
+app.use("/installments", installmentRoutes);
 
 // Swagger UI em /docs
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-// Documentação HTML simples em /documentacao
+// Documentação HTML (arquivo separado em public/documentacao.html)
 app.get("/documentacao", (req, res) => {
-  res.send(`<!DOCTYPE html>
-  <html lang="pt-BR">
-    <head>
-      <meta charset="UTF-8" />
-      <title>Documentação - Controle Financeiro Inteligente</title>
-      <style>
-        body {
-          font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-            sans-serif;
-          max-width: 800px;
-          margin: 40px auto;
-          padding: 0 16px;
-          line-height: 1.6;
-          background-color: #f5f7fb;
-          color: #222;
-        }
-        h1 {
-          color: #1a237e;
-        }
-        h2 {
-          color: #283593;
-          margin-top: 24px;
-        }
-        code {
-          background: #eceff1;
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-size: 0.95em;
-        }
-        .card {
-          background: #fff;
-          border-radius: 8px;
-          padding: 16px 20px;
-          box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
-          margin-bottom: 16px;
-        }
-        .tag {
-          display: inline-block;
-          padding: 2px 8px;
-          border-radius: 999px;
-          font-size: 12px;
-          font-weight: 600;
-          margin-right: 8px;
-        }
-        .tag-get {
-          background: #e3f2fd;
-          color: #1565c0;
-        }
-        .tag-post {
-          background: #e8f5e9;
-          color: #2e7d32;
-        }
-        .tag-put {
-          background: #fff3e0;
-          color: #ef6c00;
-        }
-        .tag-delete {
-          background: #ffebee;
-          color: #c62828;
-        }
-        .path {
-          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-            "Liberation Mono", "Courier New", monospace;
-        }
-        a {
-          color: #1e88e5;
-          text-decoration: none;
-        }
-        a:hover {
-          text-decoration: underline;
-        }
-      </style>
-    </head>
-    <body>
-      <h1>Documentação da API</h1>
-      <p>
-        Esta é a documentação textual da API do
-        <strong>Controle Financeiro Inteligente</strong>.
-      </p>
-
-      <div class="card">
-        <h2>Swagger</h2>
-        <p>
-          Você pode explorar e testar a API de forma interativa acessando o
-          Swagger UI em:
-        </p>
-        <p><a href="/docs"><code>/docs</code></a></p>
-      </div>
-
-      <div class="card">
-        <h2>Autenticação (JWT)</h2>
-
-        <p>
-          Para acessar os endpoints protegidos, primeiro faça login em:
-        </p>
-        <p>
-          <span class="tag tag-post">POST</span>
-          <span class="path">/auth/login</span>
-        </p>
-        <p>Body esperado:</p>
-        <p><code>{ "email": "seu@email",
-        "password": "sua_senha" }</code></p>
-
-        <p>
-          A resposta retornará um <code>token</code> JWT. Use-o no header
-          <code>Authorization</code>:
-        </p>
-        <p><code>Authorization: Bearer &lt;seu_token&gt;</code></p>
-      </div>
-
-      <div class="card">
-        <h2>Endpoints de Usuários</h2>
-
-        <p>
-          <span class="tag tag-post">POST</span>
-          <span class="path">/users</span><br />
-          Cria um novo usuário (não requer autenticação).
-        </p>
-
-        <p>
-          <span class="tag tag-get">GET</span>
-          <span class="path">/users</span><br />
-          Lista todos os usuários (requer token).
-        </p>
-
-        <p>
-          <span class="tag tag-get">GET</span>
-          <span class="path">/users/{id}</span><br />
-          Busca um usuário pelo ID (requer token).
-        </p>
-
-        <p>
-          <span class="tag tag-put">PUT</span>
-          <span class="path">/users/{id}</span><br />
-          Atualiza os dados de um usuário (requer token).
-        </p>
-
-        <p>
-          <span class="tag tag-delete">DELETE</span>
-          <span class="path">/users/{id}</span><br />
-          Remove um usuário (requer token).
-        </p>
-      </div>
-
-      <div class="card">
-        <h2>Endpoints de Transações Recorrentes</h2>
-
-        <p>
-          <span class="tag tag-get">GET</span>
-          <span class="path">/recurring-transactions</span><br />
-          Lista todas as transações recorrentes (requer token).
-        </p>
-
-        <p>
-          <span class="tag tag-post">POST</span>
-          <span class="path">/recurring-transactions</span><br />
-          Cria uma nova transação recorrente (requer token).
-        </p>
-
-        <p>
-          <span class="tag tag-get">GET</span>
-          <span class="path">/recurring-transactions/{id}</span><br />
-          Busca uma transação recorrente pelo ID (requer token).
-        </p>
-
-        <p>
-          <span class="tag tag-put">PUT</span>
-          <span class="path">/recurring-transactions/{id}</span><br />
-          Atualiza os dados de uma transação recorrente (requer token).
-        </p>
-
-        <p>
-          <span class="tag tag-delete">DELETE</span>
-          <span class="path">/recurring-transactions/{id}</span><br />
-          Remove uma transação recorrente (requer token).
-        </p>
-      </div>
-    </body>
-  </html>`);
+  res.sendFile(path.join(__dirname, "..", "public", "documentacao.html"));
 });
 
 app.use("/health", (req, res) => {
