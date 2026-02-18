@@ -49,13 +49,17 @@ Controle_Fincanceiro_Inteligente/
 │   ├── prisma/
 │   │   └── schema.prisma    # Modelos do banco
 │   ├── public/
-│   │   └── documentacao.html
+│   │   └── documentacao.html  # Documentação HTML da API
+│   ├── postman/
+│   │   └── Controle_Financeiro_Inteligente.postman_collection.json  # Collection para importar no Postman
 │   └── src/
 │       ├── controllers/
 │       ├── services/
 │       ├── routes/
 │       ├── middlewares/
 │       ├── interfaces/
+│       ├── types/
+│       ├── swagger.ts       # Especificação OpenAPI (Swagger)
 │       └── app.ts
 └── README.md
 ```
@@ -122,6 +126,7 @@ Controle_Fincanceiro_Inteligente/
 
 - **Swagger (interativo):** [http://localhost:3000/docs](http://localhost:3000/docs)  
 - **Documentação em HTML:** [http://localhost:3000/documentacao](http://localhost:3000/documentacao)  
+- **Postman:** importe a collection em `backend/postman/Controle_Financeiro_Inteligente.postman_collection.json` para testar todos os endpoints.
 
 ### Autenticação
 
@@ -134,15 +139,22 @@ A maioria dos endpoints exige autenticação via **JWT**:
 
 ### Principais recursos
 
-| Recurso                 | Descrição                          |
-|-------------------------|------------------------------------|
-| `POST /auth/login`      | Login (retorna token JWT)          |
-| `POST /users`           | Cadastro de usuário (público)      |
-| `GET/PUT/DELETE /users` | Listar, atualizar e remover usuário (com token) |
-| `/recurring-transactions` | Transações recorrentes (CRUD, com token) |
-| `/budgets`              | Orçamentos por categoria/mês/ano (CRUD, com token) |
-| `/installments`         | Parcelas de transações (CRUD, com token) |
-| `GET /health`           | Health check da API                |
+| Recurso                   | Descrição                                      |
+|---------------------------|------------------------------------------------|
+| `POST /auth/login`        | Login (retorna token JWT)                      |
+| `POST /users`             | Cadastro de usuário (público)                  |
+| `GET/PUT/DELETE /users`   | Listar, atualizar e remover usuário (com token) |
+| `/recurring-transactions`  | Transações recorrentes (CRUD, com token)       |
+| `/budgets`                | Orçamentos por categoria/mês/ano (CRUD, com token) |
+| `/accounts`               | Contas (corrente, poupança, carteira) (CRUD, com token) |
+| `/credit-cards`           | Cartões de crédito (CRUD, com token)          |
+| `/installments`           | Parcelas de transações (CRUD, com token)      |
+| `/experiments`             | Experimentos A/B e atribuição de variantes (com token) |
+| `/metrics/events`         | Registro de eventos (clique, impressão, sessão) |
+| `/metrics/experiments/:id/ctr` | CTR por variante do experimento            |
+| `/metrics/experiments/:id/time-in-app` | Tempo no app por variante           |
+| `GET /health`             | Health check da API                            |
+| `GET /hello`               | Exemplo simples                                |
 
 ---
 
@@ -153,9 +165,13 @@ A maioria dos endpoints exige autenticação via **JWT**:
 - Transações recorrentes (diária, semanal, mensal, anual)  
 - Organização por categorias  
 - Orçamentos por categoria, mês e ano  
+- Contas (corrente, poupança, carteira)  
+- Cartões de crédito (limite, fechamento, vencimento)  
 - Parcelamento de transações  
 - Definição de metas financeiras  
 - Controle de orçamento mensal  
+- Experimentos A/B (variantes e atribuição de usuários)  
+- Métricas (CTR, tempo no app por variante)  
 - Relatórios gráficos (previsto no app)  
 - Comparativo de gastos por período (previsto no app)  
 
