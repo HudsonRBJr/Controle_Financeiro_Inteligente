@@ -8,6 +8,8 @@ import recurringTransactionRoutes from "./routes/recurring-transaction.routes";
 import budgetRoutes from "./routes/budget.routes";
 import installmentRoutes from "./routes/installment.routes";
 import authRoutes from "./routes/auth.routes";
+import experimentRoutes from "./routes/experiment.routes";
+import metricsRoutes from "./routes/metrics.routes";
 
 export const app = express();
 
@@ -342,6 +344,102 @@ const swaggerDocument = {
         },
       },
     },
+    "/experiments": {
+      get: {
+        summary: "Listar experimentos A/B",
+        security: [{ bearerAuth: [] }],
+        responses: { "200": { description: "Lista de experimentos" }, "401": { description: "Token ausente ou inválido" } },
+      },
+      post: {
+        summary: "Criar experimento A/B (com variantes)",
+        security: [{ bearerAuth: [] }],
+        responses: { "201": { description: "Experimento criado" }, "401": { description: "Token ausente ou inválido" }, "409": { description: "Slug já existe" } },
+      },
+    },
+    "/experiments/{id}": {
+      get: {
+        summary: "Buscar experimento por ID",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: { "200": { description: "Experimento encontrado" }, "404": { description: "Não encontrado" }, "401": { description: "Token ausente ou inválido" } },
+      },
+      put: {
+        summary: "Atualizar experimento",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: { "200": { description: "Atualizado" }, "404": { description: "Não encontrado" }, "401": { description: "Token ausente ou inválido" } },
+      },
+      delete: {
+        summary: "Remover experimento",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: { "204": { description: "Removido" }, "404": { description: "Não encontrado" }, "401": { description: "Token ausente ou inválido" } },
+      },
+    },
+    "/experiments/{id}/assign": {
+      post: {
+        summary: "Obter ou atribuir variante do experimento para o usuário logado",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: { "200": { description: "Atribuição (variante A/B)" }, "404": { description: "Experimento não encontrado ou inativo" }, "401": { description: "Token ausente ou inválido" } },
+      },
+    },
+    "/experiments/{id}/assignment": {
+      get: {
+        summary: "Consultar variante atribuída ao usuário no experimento",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: { "200": { description: "Atribuição" }, "404": { description: "Usuário não está no experimento" }, "401": { description: "Token ausente ou inválido" } },
+      },
+    },
+    "/metrics/events": {
+      post: {
+        summary: "Registrar evento de métrica (clique, impressão, sessão, etc.)",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  eventType: { type: "string", enum: ["CLICK", "IMPRESSION", "SCREEN_VIEW", "SESSION_START", "SESSION_END"] },
+                  target: { type: "string" },
+                  experimentId: { type: "string" },
+                  variantId: { type: "string" },
+                  metadata: { type: "object" },
+                },
+                required: ["eventType"],
+              },
+            },
+          },
+        },
+        responses: { "201": { description: "Evento registrado" }, "400": { description: "eventType inválido" }, "401": { description: "Token ausente ou inválido" } },
+      },
+    },
+    "/metrics/experiments/{id}/ctr": {
+      get: {
+        summary: "Taxa de cliques (CTR) por variante do experimento",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: { "200": { description: "CTR por variante (clicks/impressions)" }, "401": { description: "Token ausente ou inválido" } },
+      },
+    },
+    "/metrics/experiments/{id}/time-in-app": {
+      get: {
+        summary: "Tempo no app por variante (sessões)",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: { "200": { description: "Tempo médio e total por variante" }, "401": { description: "Token ausente ou inválido" } },
+      },
+    },
+    "/metrics/experiments/{id}/summary": {
+      get: {
+        summary: "Resumo de métricas do experimento (CTR + tempo no app)",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: { "200": { description: "Resumo por variante" }, "401": { description: "Token ausente ou inválido" } },
+      },
+    },
   },
 };
 
@@ -353,6 +451,8 @@ app.use("/users", userRoutes);
 app.use("/recurring-transactions", recurringTransactionRoutes);
 app.use("/budgets", budgetRoutes);
 app.use("/installments", installmentRoutes);
+app.use("/experiments", experimentRoutes);
+app.use("/metrics", metricsRoutes);
 
 // Swagger UI em /docs
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));

@@ -313,6 +313,9 @@
         <a href="#recurring">Transações recorrentes</a>
         <a href="#budgets">Orçamentos</a>
         <a href="#installments">Parcelas</a>
+        <div class="nav-section">Testes A/B e métricas</div>
+        <a href="#experiments">Experimentos A/B</a>
+        <a href="#metrics">Métricas (CTR, tempo no app)</a>
         <div class="nav-section">Utilitários</div>
         <a href="#health">Health &amp; Hello</a>
       </nav>
@@ -555,6 +558,87 @@
             <span class="badge auth">requer token</span>
           </div>
           <p class="desc">Remover parcela.</p>
+        </div>
+
+        <h2 id="experiments">Experimentos A/B</h2>
+        <p>
+          Criação de experimentos com variantes (ex.: controle vs. variante A) e atribuição de usuários a uma variante.
+          Todas as rotas exigem token.
+        </p>
+        <div class="card endpoint-block">
+          <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="path">/experiments</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Criar experimento com variantes. Body: name, slug, description?, startDate, endDate?, active?, variants: [{ name, slug }].</p>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/experiments</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Listar experimentos.</p>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/experiments/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Buscar experimento por ID.</p>
+          <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="path">/experiments/{id}/assign</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Obter ou atribuir a variante do experimento para o usuário logado (aleatória na primeira vez).</p>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/experiments/{id}/assignment</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Consultar variante já atribuída ao usuário.</p>
+        </div>
+
+        <h2 id="metrics">Métricas (CTR, tempo no app)</h2>
+        <p>
+          Registro de eventos e consulta de métricas por experimento: <strong>CTR</strong> (taxa de cliques = cliques/impressões) e <strong>tempo no app</strong> (sessões).
+        </p>
+        <div class="card endpoint-block">
+          <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="path">/metrics/events</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Registrar evento. Body: eventType (CLICK | IMPRESSION | SCREEN_VIEW | SESSION_START | SESSION_END), target?, experimentId?, variantId?, metadata?.</p>
+          <pre>{
+  "eventType": "CLICK",
+  "target": "primary_button",
+  "experimentId": "uuid",
+  "variantId": "uuid"
+}</pre>
+          <pre>{
+  "eventType": "SESSION_END",
+  "experimentId": "uuid",
+  "variantId": "uuid",
+  "metadata": { "durationSeconds": 120 }
+}</pre>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/metrics/experiments/{id}/ctr</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">CTR por variante (impressões, cliques, ctr).</p>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/metrics/experiments/{id}/time-in-app</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Tempo no app por variante (totalSeconds, sessionCount, averageSecondsPerSession).</p>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/metrics/experiments/{id}/summary</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Resumo agregado: CTR + tempo no app por variante.</p>
         </div>
 
         <h2 id="health">Utilitários</h2>
