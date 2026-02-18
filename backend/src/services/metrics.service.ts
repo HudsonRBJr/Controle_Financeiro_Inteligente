@@ -10,7 +10,7 @@ export class MetricsService {
         target: data.target,
         experimentId: data.experimentId,
         variantId: data.variantId,
-        metadata: data.metadata ?? undefined,
+        metadata: (data.metadata ?? undefined) as any,
       },
       select: {
         id: true,

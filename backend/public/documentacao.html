@@ -312,6 +312,8 @@
         <a href="#users">Usuários</a>
         <a href="#recurring">Transações recorrentes</a>
         <a href="#budgets">Orçamentos</a>
+        <a href="#accounts">Contas</a>
+        <a href="#credit-cards">Cartões de crédito</a>
         <a href="#installments">Parcelas</a>
         <div class="nav-section">Testes A/B e métricas</div>
         <a href="#experiments">Experimentos A/B</a>
@@ -514,6 +516,90 @@
             <span class="badge auth">requer token</span>
           </div>
           <p class="desc">Remover orçamento.</p>
+        </div>
+
+        <h2 id="accounts">Contas (Account)</h2>
+        <p>Contas bancárias ou carteiras do usuário (corrente, poupança, carteira). Todas as rotas exigem token. Listagem e busca filtram pelo usuário autenticado.</p>
+
+        <div class="card endpoint-block">
+          <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="path">/accounts</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Criar conta.</p>
+          <pre>{
+  "name": "Conta Corrente",
+  "balance": 0,
+  "type": "checking"
+}</pre>
+          <p><strong>type:</strong> checking | savings | wallet</p>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/accounts</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Listar contas do usuário.</p>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/accounts/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Buscar conta por ID.</p>
+          <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="path">/accounts/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Atualizar (name, balance, type — parciais).</p>
+          <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="path">/accounts/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Remover conta.</p>
+        </div>
+
+        <h2 id="credit-cards">Cartões de crédito (CreditCard)</h2>
+        <p>Cartões de crédito com limite, dia de fechamento e vencimento. Todas as rotas exigem token. Listagem e busca filtram pelo usuário autenticado.</p>
+
+        <div class="card endpoint-block">
+          <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="path">/credit-cards</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Criar cartão de crédito.</p>
+          <pre>{
+  "name": "Cartão Nubank",
+  "limit": 5000,
+  "closingDay": 15,
+  "dueDay": 22
+}</pre>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/credit-cards</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Listar cartões do usuário.</p>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/credit-cards/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Buscar cartão por ID.</p>
+          <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="path">/credit-cards/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Atualizar (name, limit, closingDay, dueDay — parciais).</p>
+          <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="path">/credit-cards/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Remover cartão de crédito.</p>
         </div>
 
         <h2 id="installments">Parcelas (Installment)</h2>
