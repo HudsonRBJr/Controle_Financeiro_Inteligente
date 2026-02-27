@@ -46,6 +46,63 @@ export const swaggerDocument = {
         },
       },
     },
+    "/configurations": {
+      get: {
+        summary: "Obter configuração do app",
+        description: "Retorna a configuração única do sistema (nome, descrição, versão). Usado pelo mobile.",
+        responses: {
+          "200": { description: "Configuração retornada com sucesso" },
+          "404": { description: "Configuração não encontrada" },
+        },
+      },
+      post: {
+        summary: "Criar configuração do app",
+        description: "Cria a configuração única. Só pode existir uma configuração no sistema.",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  name: { type: "string", description: "Nome do sistema" },
+                  description: { type: "string", description: "Descrição do sistema" },
+                  version: { type: "string", description: "Versão do sistema" },
+                },
+                required: ["name", "description", "version"],
+              },
+            },
+          },
+        },
+        responses: {
+          "201": { description: "Configuração criada com sucesso" },
+          "400": { description: "Nome, descrição e versão são obrigatórios" },
+          "409": { description: "Já existe uma configuração. Use PUT para atualizar." },
+        },
+      },
+      put: {
+        summary: "Atualizar configuração do app",
+        description: "Atualiza a configuração existente. Usado pela tela web.",
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  name: { type: "string", description: "Nome do sistema" },
+                  description: { type: "string", description: "Descrição do sistema" },
+                  version: { type: "string", description: "Versão do sistema" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "Configuração atualizada com sucesso" },
+          "404": { description: "Configuração não encontrada" },
+        },
+      },
+    },
     "/users": {
       get: {
         summary: "Listar usuários",

@@ -12,6 +12,7 @@ import experimentRoutes from "./routes/experiment.routes";
 import metricsRoutes from "./routes/metrics.routes";
 import accountRoutes from "./routes/account.routes";
 import creditCardRoutes from "./routes/credit-card.routes";
+import configurationRoutes from "./routes/configuration.routes";
 import { swaggerDocument } from "./swagger";
 
 export const app = express();
@@ -25,6 +26,7 @@ app.use("/recurring-transactions", recurringTransactionRoutes);
 app.use("/budgets", budgetRoutes);
 app.use("/accounts", accountRoutes);
 app.use("/credit-cards", creditCardRoutes);
+app.use("/configurations", configurationRoutes);
 app.use("/installments", installmentRoutes);
 app.use("/experiments", experimentRoutes);
 app.use("/metrics", metricsRoutes);

@@ -42,14 +42,14 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  accounts                Account[]
-  categories              Category[]
-  transactions            Transaction[]
-  budgets                 Budget[]
-  creditCards             CreditCard[]
-  recurringTransactions   RecurringTransaction[]
-  experimentAssignments   UserExperimentAssignment[]
-  metricEvents            MetricEvent[]
+  accounts              Account[]
+  categories            Category[]
+  transactions          Transaction[]
+  budgets               Budget[]
+  creditCards           CreditCard[]
+  recurringTransactions RecurringTransaction[]
+  experimentAssignments UserExperimentAssignment[]
+  metricEvents          MetricEvent[]
 }
 
 model Account {
@@ -181,7 +181,7 @@ model Experiment {
 }
 
 model ExperimentVariant {
-  id           String   @id @default(uuid())
+  id           String     @id @default(uuid())
   name         String
   slug         String
   experimentId String
@@ -195,27 +195,36 @@ model ExperimentVariant {
 
 model UserExperimentAssignment {
   userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   experimentId String
-  experiment   Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  experiment   Experiment        @relation(fields: [experimentId], references: [id], onDelete: Cascade)
   variantId    String
   variant      ExperimentVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
-  assignedAt   DateTime @default(now())
+  assignedAt   DateTime          @default(now())
 
   @@id([userId, experimentId])
 }
 
 model MetricEvent {
-  id           String          @id @default(uuid())
+  id           String             @id @default(uuid())
   eventType    MetricEventType
   target       String?
   experimentId String?
-  experiment   Experiment?     @relation(fields: [experimentId], references: [id], onDelete: SetNull)
+  experiment   Experiment?        @relation(fields: [experimentId], references: [id], onDelete: SetNull)
   variantId    String?
   variant      ExperimentVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
   metadata     Json?
-  createdAt    DateTime        @default(now())
+  createdAt    DateTime           @default(now())
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Configuration {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  version     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
