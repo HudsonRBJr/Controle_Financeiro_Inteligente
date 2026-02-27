@@ -58,7 +58,7 @@ export default function RelatoriosScreen() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Tendência Mensal</Text>
           <View style={styles.tendenciaChart}>
-            {TENDENCIA_MENSAL.map((item, i) => (
+            {TENDENCIA_MENSAL.map((item) => (
               <View key={item.mes} style={styles.tendenciaCol}>
                 <View style={styles.tendenciaBars}>
                   <View
