@@ -21,9 +21,8 @@ export default function TabsLayout() {
           fontWeight: "600",
         },
         tabBarItemStyle: {
-          minWidth: 64,
+          minWidth: 48,
         },
-        tabBarScrollEnabled: false,
         tabBarIconStyle: {
           marginBottom: -2,
         },
