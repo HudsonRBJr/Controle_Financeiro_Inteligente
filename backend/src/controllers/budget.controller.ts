@@ -41,6 +41,24 @@ export class BudgetController {
 
   async list(req: Request, res: Response) {
     const authUser = (req as any).user as AuthenticatedUser | undefined;
+    const month = req.query.month ? Number(req.query.month) : undefined;
+    const year = req.query.year ? Number(req.query.year) : undefined;
+    const all = req.query.all === "true";
+
+    if (all) {
+      const budgets = await budgetService.listAllWithDetails(authUser!.id);
+      return res.json(budgets);
+    }
+
+    if (month && year) {
+      const budgets = await budgetService.listByPeriod(
+        authUser!.id,
+        month,
+        year
+      );
+      return res.json(budgets);
+    }
+
     const budgets = await budgetService.list(authUser!.id);
     return res.json(budgets);
   }

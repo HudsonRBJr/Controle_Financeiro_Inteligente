@@ -31,6 +31,11 @@ export class CreditCardController {
 
   async list(req: Request, res: Response) {
     const authUser = (req as any).user as AuthenticatedUser | undefined;
+    const details = req.query.details === "true";
+    if (details) {
+      const creditCards = await creditCardService.listWithSpent(authUser!.id);
+      return res.json(creditCards);
+    }
     const creditCards = await creditCardService.list(authUser!.id);
     return res.json(creditCards);
   }
