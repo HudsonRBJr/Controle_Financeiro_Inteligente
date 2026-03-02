@@ -16,13 +16,6 @@ export type CreateCreditCardInput = {
   dueDay: number;
 };
 
-export type CreateCreditCardPayload = {
-  name: string;
-  limit: number;
-  closingDay: number;
-  dueDay: number;
-};
-
 export async function getCreditCards(): Promise<CreditCardItem[]> {
   return api.getAuth<CreditCardItem[]>("/credit-cards?details=true");
 }

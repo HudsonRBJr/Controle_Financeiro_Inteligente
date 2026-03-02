@@ -39,14 +39,21 @@ export class RecurringTransactionController {
     return res.status(201).json(recurringTransaction);
   }
 
-  async list(_req: Request, res: Response) {
-    const recurringTransactions = await recurringTransactionService.list();
+  async list(req: Request, res: Response) {
+    const authUser = (req as any).user as AuthenticatedUser | undefined;
+    const recurringTransactions = await recurringTransactionService.list(
+      authUser!.id
+    );
     return res.json(recurringTransactions);
   }
 
   async getById(req: Request, res: Response) {
     const { id } = req.params as { id: string };
-    const recurringTransaction = await recurringTransactionService.getById(id);
+    const authUser = (req as any).user as AuthenticatedUser | undefined;
+    const recurringTransaction = await recurringTransactionService.getById(
+      id,
+      authUser!.id
+    );
 
     if (!recurringTransaction) {
       return res
@@ -59,6 +66,7 @@ export class RecurringTransactionController {
 
   async update(req: Request, res: Response) {
     const { id } = req.params as { id: string };
+    const authUser = (req as any).user as AuthenticatedUser | undefined;
     const {
       title,
       amount,
@@ -70,7 +78,10 @@ export class RecurringTransactionController {
     } = req.body as UpdateRecurringTransactionInput;
 
     try {
-      const recurringTransaction = await recurringTransactionService.update(id, {
+      const recurringTransaction = await recurringTransactionService.update(
+        id,
+        authUser!.id,
+        {
         title,
         amount,
         type,
@@ -78,7 +89,8 @@ export class RecurringTransactionController {
         startDate,
         endDate,
         active,
-      });
+        }
+      );
 
       return res.json(recurringTransaction);
     } catch (error) {
@@ -97,9 +109,13 @@ export class RecurringTransactionController {
 
   async delete(req: Request, res: Response) {
     const { id } = req.params as { id: string };
+    const authUser = (req as any).user as AuthenticatedUser | undefined;
 
     try {
-      const recurringTransaction = await recurringTransactionService.delete(id);
+      const recurringTransaction = await recurringTransactionService.delete(
+        id,
+        authUser!.id
+      );
       return res.json(recurringTransaction);
     } catch (error) {
       if (

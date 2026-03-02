@@ -17,11 +17,20 @@ export class CreditCardController {
     >;
     const authUser = (req as any).user as AuthenticatedUser | undefined;
 
+    const closing = closingDay != null ? Number(closingDay) : undefined;
+    const due = dueDay != null ? Number(dueDay) : undefined;
+
+    if (!name || limit == null || closing == null || due == null) {
+      return res.status(400).json({
+        message: "Campos obrigatórios: name, limit, closingDay, dueDay",
+      });
+    }
+
     const data: CreateCreditCardInput = {
-      name,
-      limit,
-      closingDay,
-      dueDay,
+      name: String(name).trim(),
+      limit: Number(limit),
+      closingDay: Math.max(1, Math.min(31, closing)),
+      dueDay: Math.max(1, Math.min(31, due)),
       userId: authUser!.id,
     };
 

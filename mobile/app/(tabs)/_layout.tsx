@@ -66,6 +66,15 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="recorrentes"
+        options={{
+          title: "Recorrentes",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="repeat" size={size ?? 20} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="relatorios"
         options={{
           title: "Relatórios",

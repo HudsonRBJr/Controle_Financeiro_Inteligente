@@ -25,20 +25,27 @@ export class RecurringTransactionService {
     return recurringTransaction;
   }
 
-  async list() {
+  async list(userId: string) {
     return prisma.recurringTransaction.findMany({
+      where: { userId },
+      select: recurringTransactionSelect,
+      orderBy: { startDate: "desc" },
+    });
+  }
+
+  async getById(id: string, userId: string) {
+    return prisma.recurringTransaction.findFirst({
+      where: { id, userId },
       select: recurringTransactionSelect,
     });
   }
 
-  async getById(id: string) {
-    return prisma.recurringTransaction.findUnique({
-      where: { id },
-      select: recurringTransactionSelect,
-    });
-  }
-
-  async update(id: string, data: UpdateRecurringTransactionInput) {
+  async update(
+    id: string,
+    userId: string,
+    data: UpdateRecurringTransactionInput
+  ) {
+    await this.getById(id, userId);
     const recurringTransaction = await prisma.recurringTransaction.update({
       where: { id },
       data,
@@ -47,7 +54,8 @@ export class RecurringTransactionService {
     return recurringTransaction;
   }
 
-  async delete(id: string) {
+  async delete(id: string, userId: string) {
+    await this.getById(id, userId);
     return prisma.recurringTransaction.delete({
       where: { id },
       select: recurringTransactionSelect,
