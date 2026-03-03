@@ -14,6 +14,7 @@ import accountRoutes from "./routes/account.routes";
 import creditCardRoutes from "./routes/credit-card.routes";
 import configurationRoutes from "./routes/configuration.routes";
 import categoryRoutes from "./routes/category.routes";
+import transactionRoutes from "./routes/transaction.routes";
 import { swaggerDocument } from "./swagger";
 
 export const app = express();
@@ -29,6 +30,7 @@ app.use("/accounts", accountRoutes);
 app.use("/credit-cards", creditCardRoutes);
 app.use("/configurations", configurationRoutes);
 app.use("/categories", categoryRoutes);
+app.use("/transactions", transactionRoutes);
 app.use("/installments", installmentRoutes);
 app.use("/experiments", experimentRoutes);
 app.use("/metrics", metricsRoutes);
