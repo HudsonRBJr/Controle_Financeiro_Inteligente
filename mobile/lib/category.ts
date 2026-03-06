@@ -16,3 +16,14 @@ export async function getCategories(): Promise<Category[]> {
 export async function createCategory(data: { name: string; color?: string }) {
   return api.postAuth<Category>("/categories", data);
 }
+
+export async function updateCategory(
+  id: string,
+  data: { name: string; color?: string }
+) {
+  return api.putAuth<Category>(`/categories/${id}`, data);
+}
+
+export async function deleteCategory(id: string) {
+  return api.deleteAuth(`/categories/${id}`);
+}
