@@ -38,7 +38,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.push("/configuracoes");
+      router.push("/dashboard-metricas");
       router.refresh();
     } catch {
       setError("Erro ao conectar. Tente novamente.");

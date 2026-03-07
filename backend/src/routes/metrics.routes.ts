@@ -5,6 +5,8 @@ import { ensureAuthenticated } from "../middlewares/ensure-authenticated";
 const router = Router();
 const controller = new MetricsController();
 
+router.get("/dashboard", controller.getDashboard.bind(controller));
+
 router.use(ensureAuthenticated);
 
 router.post("/events", controller.recordEvent.bind(controller));

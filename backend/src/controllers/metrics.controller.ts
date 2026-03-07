@@ -8,6 +8,13 @@ const metricsService = new MetricsService();
 const VALID_EVENT_TYPES = ["CLICK", "IMPRESSION", "SCREEN_VIEW", "SESSION_START", "SESSION_END"];
 
 export class MetricsController {
+  async getDashboard(req: Request, res: Response) {
+    const daysRaw = req.query.days as string | undefined;
+    const days = daysRaw ? Number(daysRaw) : 30;
+    const data = await metricsService.getDashboardData(days);
+    return res.json(data);
+  }
+
   async recordEvent(req: Request, res: Response) {
     const authUser = (req as any).user as AuthenticatedUser | undefined;
     const body = req.body as RecordMetricEventInput;

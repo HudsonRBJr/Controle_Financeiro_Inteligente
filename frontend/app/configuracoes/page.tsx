@@ -135,12 +135,20 @@ export default function ConfiguracoesPage() {
           <h1 className="text-xl font-bold text-[#263238]">
             Configuração do App
           </h1>
-          <button
-            onClick={handleLogout}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-[#666] hover:bg-[#F5F5F5]"
-          >
-            Sair
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.push("/dashboard-metricas")}
+              className="rounded-lg px-4 py-2 text-sm font-medium text-[#1976D2] hover:bg-[#E3F2FD]"
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={handleLogout}
+              className="rounded-lg px-4 py-2 text-sm font-medium text-[#666] hover:bg-[#F5F5F5]"
+            >
+              Sair
+            </button>
+          </div>
         </div>
       </header>
 
