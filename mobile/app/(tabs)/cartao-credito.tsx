@@ -20,6 +20,8 @@ import {
   deleteCreditCard,
   type CreditCardItem,
 } from "../../lib/credit-card";
+import { trackClick } from "../../lib/metrics";
+import { useScreenMetrics } from "../../lib/screen-metrics";
 
 function formatMoney(value: number) {
   return value.toFixed(2).replace(".", ",");
@@ -30,6 +32,7 @@ function padDay(n: number) {
 }
 
 export default function CartaoCreditoScreen() {
+  useScreenMetrics("screen_cartao_credito");
   const [cards, setCards] = useState<CreditCardItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -79,6 +82,7 @@ export default function CartaoCreditoScreen() {
   const totalAvailable = totalLimit - totalSpent;
 
   const openCreateModal = () => {
+    trackClick("cartao_credito_open_create_modal");
     setFormName("");
     setFormLimit("");
     setFormClosingDay("10");
@@ -88,6 +92,7 @@ export default function CartaoCreditoScreen() {
   };
 
   const openEditModal = (item: CreditCardItem) => {
+    trackClick("cartao_credito_open_edit_modal", { cardId: item.id });
     setEditingCard(item);
     setFormName(item.name);
     setFormLimit(String(item.limit));
@@ -98,6 +103,7 @@ export default function CartaoCreditoScreen() {
   };
 
   const openDeleteModal = (item: CreditCardItem) => {
+    trackClick("cartao_credito_open_delete_modal", { cardId: item.id });
     setDeletingCard(item);
     setFormError("");
     setDeleteModalVisible(true);
@@ -136,6 +142,7 @@ export default function CartaoCreditoScreen() {
     setFormLoading(true);
     try {
       await createCreditCard(validated);
+      trackClick("cartao_credito_create_success");
       setCreateModalVisible(false);
       fetchCards();
     } catch (e) {
@@ -156,6 +163,7 @@ export default function CartaoCreditoScreen() {
     setFormLoading(true);
     try {
       await updateCreditCard(editingCard.id, validated);
+      trackClick("cartao_credito_update_success", { cardId: editingCard.id });
       setEditModalVisible(false);
       setEditingCard(null);
       fetchCards();
@@ -173,6 +181,7 @@ export default function CartaoCreditoScreen() {
     setFormLoading(true);
     try {
       await deleteCreditCard(deletingCard.id);
+      trackClick("cartao_credito_delete_success", { cardId: deletingCard.id });
       setDeleteModalVisible(false);
       setDeletingCard(null);
       fetchCards();

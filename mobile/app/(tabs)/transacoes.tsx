@@ -8,6 +8,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { trackClick } from "../../lib/metrics";
+import { useScreenMetrics } from "../../lib/screen-metrics";
 
 const TRANSACOES = [
   { id: "1", nome: "Salário mensal", categoria: "Salário", data: "31 de jan. de 2026", valor: 5000, tipo: "entrada" as const },
@@ -20,6 +22,8 @@ const TRANSACOES = [
 ];
 
 export default function TransacoesScreen() {
+  useScreenMetrics("screen_transacoes");
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <ScrollView
@@ -33,7 +37,10 @@ export default function TransacoesScreen() {
             <Text style={styles.title}>Transações</Text>
             <Text style={styles.subtitle}>Gerencie todas as suas transações</Text>
           </View>
-          <TouchableOpacity style={styles.btnNovaTransacao}>
+          <TouchableOpacity
+            style={styles.btnNovaTransacao}
+            onPress={() => trackClick("transacoes_nova_transacao_click")}
+          >
             <MaterialIcons name="add" size={22} color="#fff" />
             <Text style={styles.btnNovaTransacaoText}>Nova Transação</Text>
           </TouchableOpacity>
@@ -49,7 +56,10 @@ export default function TransacoesScreen() {
               placeholderTextColor="#999"
             />
           </View>
-          <TouchableOpacity style={styles.filterWrap}>
+          <TouchableOpacity
+            style={styles.filterWrap}
+            onPress={() => trackClick("transacoes_open_filter_click")}
+          >
             <MaterialIcons name="filter-list" size={20} color="#666" />
             <Text style={styles.filterText}>Todas</Text>
             <MaterialIcons name="keyboard-arrow-down" size={20} color="#666" />
@@ -80,7 +90,10 @@ export default function TransacoesScreen() {
                 <Text style={[styles.transacaoValor, t.tipo === "entrada" ? styles.valorEntrada : styles.valorSaida]}>
                   {t.tipo === "entrada" ? "+" : "-"} R$ {Math.abs(t.valor).toFixed(2)}
                 </Text>
-                <TouchableOpacity style={styles.transacaoDelete}>
+                <TouchableOpacity
+                  style={styles.transacaoDelete}
+                  onPress={() => trackClick("transacoes_delete_click", { transactionId: t.id })}
+                >
                   <MaterialIcons name="delete-outline" size={20} color="#999" />
                 </TouchableOpacity>
               </View>

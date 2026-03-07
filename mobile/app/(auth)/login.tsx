@@ -15,9 +15,12 @@ import { useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { auth } from "../../lib/auth";
 import { getConfiguration, type Configuration } from "../../lib/configuration";
+import { recordMetricEvent, trackClick } from "../../lib/metrics";
+import { useScreenMetrics } from "../../lib/screen-metrics";
 
 export default function LoginScreen() {
   const router = useRouter();
+  useScreenMetrics("screen_login");
   const [config, setConfig] = useState<Configuration | null>(null);
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
@@ -32,6 +35,7 @@ export default function LoginScreen() {
 
   const handleSubmit = async () => {
     setError("");
+    trackClick(isLogin ? "login_submit_click" : "register_submit_click");
     if (isLogin) {
       if (!email.trim() || !senha) {
         setError("E-mail e senha são obrigatórios.");
@@ -49,11 +53,21 @@ export default function LoginScreen() {
       if (isLogin) {
         const res = await auth.login(email.trim(), senha);
         await auth.saveToken(res.token);
+        await recordMetricEvent({
+          eventType: "SESSION_START",
+          target: "mobile_app",
+          metadata: { source: "login" },
+        });
         router.replace("/(tabs)/dashboard");
       } else {
         await auth.register(nome.trim(), email.trim(), senha);
         const res = await auth.login(email.trim(), senha);
         await auth.saveToken(res.token);
+        await recordMetricEvent({
+          eventType: "SESSION_START",
+          target: "mobile_app",
+          metadata: { source: "register" },
+        });
         router.replace("/(tabs)/dashboard");
       }
     } catch (e) {

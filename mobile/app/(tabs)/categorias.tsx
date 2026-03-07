@@ -20,6 +20,8 @@ import {
   deleteCategory,
   type Category,
 } from "../../lib/category";
+import { trackClick } from "../../lib/metrics";
+import { useScreenMetrics } from "../../lib/screen-metrics";
 
 const CORES_CATEGORIA = [
   "#4CAF50",
@@ -35,6 +37,7 @@ const CORES_CATEGORIA = [
 ];
 
 export default function CategoriasScreen() {
+  useScreenMetrics("screen_categorias");
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -87,6 +90,7 @@ export default function CategoriasScreen() {
   };
 
   const openCreateModal = () => {
+    trackClick("categorias_open_create_modal");
     setFormName("");
     setFormColor(CORES_CATEGORIA[0]);
     setFormError("");
@@ -94,6 +98,7 @@ export default function CategoriasScreen() {
   };
 
   const openEditModal = (cat: Category) => {
+    trackClick("categorias_open_edit_modal", { categoryId: cat.id });
     setEditingCategory(cat);
     setFormName(cat.name);
     setFormColor(cat.color ?? CORES_CATEGORIA[0]);
@@ -102,6 +107,7 @@ export default function CategoriasScreen() {
   };
 
   const openDeleteModal = (cat: Category) => {
+    trackClick("categorias_open_delete_modal", { categoryId: cat.id });
     setDeletingCategory(cat);
     setFormError("");
     setDeleteModalVisible(true);
@@ -116,6 +122,7 @@ export default function CategoriasScreen() {
     setFormLoading(true);
     try {
       await createCategory({ name: formName.trim(), color: formColor });
+      trackClick("categorias_create_success");
       setCreateModalVisible(false);
       fetchCategories();
     } catch {
@@ -139,6 +146,7 @@ export default function CategoriasScreen() {
         name: formName.trim(),
         color: formColor,
       });
+      trackClick("categorias_update_success", { categoryId: editingCategory.id });
       setEditModalVisible(false);
       fetchCategories();
     } catch {
@@ -154,6 +162,7 @@ export default function CategoriasScreen() {
     setFormLoading(true);
     try {
       await deleteCategory(deletingCategory.id);
+      trackClick("categorias_delete_success", { categoryId: deletingCategory.id });
       setDeleteModalVisible(false);
       fetchCategories();
     } catch {

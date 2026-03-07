@@ -10,6 +10,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter, type Href } from "expo-router";
 import { auth } from "../../lib/auth";
+import { recordMetricEvent, trackClick } from "../../lib/metrics";
+import { useScreenMetrics } from "../../lib/screen-metrics";
 
 const MENU_OPTIONS = [
   {
@@ -56,8 +58,10 @@ const MENU_OPTIONS = [
 
 export default function MaisScreen() {
   const router = useRouter();
+  useScreenMetrics("screen_mais");
 
   const handleLogout = () => {
+    trackClick("mais_open_logout_confirm");
     Alert.alert(
       "Sair",
       "Deseja realmente sair da sua conta?",
@@ -67,6 +71,11 @@ export default function MaisScreen() {
           text: "Sair",
           style: "destructive",
           onPress: async () => {
+            await recordMetricEvent({
+              eventType: "SESSION_END",
+              target: "mobile_app",
+              metadata: { source: "mais_logout" },
+            });
             await auth.logout();
             router.replace("/(auth)/login");
           },
@@ -93,7 +102,10 @@ export default function MaisScreen() {
             key={item.id}
             style={styles.optionCard}
             activeOpacity={0.7}
-            onPress={() => router.push(item.route)}
+            onPress={() => {
+              trackClick("mais_menu_navigation_click", { menuId: item.id });
+              router.push(item.route);
+            }}
           >
             <View style={[styles.iconWrap, { backgroundColor: item.iconBg }]}>
               <MaterialIcons

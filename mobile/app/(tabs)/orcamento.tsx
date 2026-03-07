@@ -25,6 +25,8 @@ import {
   createCategory,
   type Category,
 } from "../../lib/category";
+import { trackClick } from "../../lib/metrics";
+import { useScreenMetrics } from "../../lib/screen-metrics";
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -41,6 +43,7 @@ function formatMoney(value: number) {
 }
 
 export default function OrcamentoScreen() {
+  useScreenMetrics("screen_orcamento");
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
@@ -136,6 +139,7 @@ export default function OrcamentoScreen() {
   };
 
   const openCreateModal = () => {
+    trackClick("orcamento_open_create_modal");
     setFormCategoryId("");
     setFormAmount("");
     setFormMonth(month);
@@ -145,6 +149,7 @@ export default function OrcamentoScreen() {
   };
 
   const openEditModal = (item: BudgetItem) => {
+    trackClick("orcamento_open_edit_modal", { budgetId: item.id });
     setEditingBudget(item);
     setFormCategoryId(item.categoryId);
     setFormAmount(String(item.amount));
@@ -155,6 +160,7 @@ export default function OrcamentoScreen() {
   };
 
   const openCategoryModal = () => {
+    trackClick("orcamento_open_category_modal");
     setFormCategoryName("");
     setFormCategoryColor(CORES_CATEGORIA[0]);
     setFormError("");
@@ -162,6 +168,7 @@ export default function OrcamentoScreen() {
   };
 
   const openDeleteModal = (item: BudgetItem) => {
+    trackClick("orcamento_open_delete_modal", { budgetId: item.id });
     setDeletingBudget(item);
     setFormError("");
     setDeleteModalVisible(true);
@@ -187,6 +194,7 @@ export default function OrcamentoScreen() {
         month: formMonth,
         year: formYear,
       });
+      trackClick("orcamento_create_success");
       setCreateModalVisible(false);
       fetchBudgets();
     } catch (e) {
@@ -219,6 +227,7 @@ export default function OrcamentoScreen() {
         month: formMonth,
         year: formYear,
       });
+      trackClick("orcamento_update_success", { budgetId: editingBudget.id });
       setEditModalVisible(false);
       setEditingBudget(null);
       fetchBudgets();
@@ -236,6 +245,7 @@ export default function OrcamentoScreen() {
     setFormLoading(true);
     try {
       await deleteBudget(deletingBudget.id);
+      trackClick("orcamento_delete_success", { budgetId: deletingBudget.id });
       setDeleteModalVisible(false);
       setDeletingBudget(null);
       fetchBudgets();
@@ -258,6 +268,7 @@ export default function OrcamentoScreen() {
     setFormLoading(true);
     try {
       await createCategory({ name, color: formCategoryColor });
+      trackClick("orcamento_create_category_success");
       setCategoryModalVisible(false);
       fetchCategories();
     } catch (e) {

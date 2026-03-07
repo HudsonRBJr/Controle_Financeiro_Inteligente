@@ -7,6 +7,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { trackClick } from "../../lib/metrics";
+import { useScreenMetrics } from "../../lib/screen-metrics";
 
 const CARDS = [
   {
@@ -58,6 +60,8 @@ const TRANSACOES = [
 ];
 
 export default function DashboardScreen() {
+  useScreenMetrics("screen_dashboard");
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <ScrollView
@@ -71,7 +75,10 @@ export default function DashboardScreen() {
             <Text style={styles.dashboardTitle}>Dashboard</Text>
             <Text style={styles.dashboardSubtitle}>Visão geral das suas finanças</Text>
           </View>
-          <TouchableOpacity style={styles.btnNovaTransacao}>
+          <TouchableOpacity
+            style={styles.btnNovaTransacao}
+            onPress={() => trackClick("dashboard_nova_transacao_click")}
+          >
             <MaterialIcons name="add" size={22} color="#fff" />
             <Text style={styles.btnNovaTransacaoText}>Nova Transação</Text>
           </TouchableOpacity>
@@ -152,7 +159,10 @@ export default function DashboardScreen() {
                 <Text style={[styles.transacaoValor, t.tipo === "entrada" ? styles.valorEntrada : styles.valorSaida]}>
                   {t.tipo === "entrada" ? "+" : "-"} R$ {Math.abs(t.valor).toFixed(2)}
                 </Text>
-                <TouchableOpacity style={styles.transacaoDelete}>
+                <TouchableOpacity
+                  style={styles.transacaoDelete}
+                  onPress={() => trackClick("dashboard_transacao_delete_click", { transactionId: t.id })}
+                >
                   <MaterialIcons name="delete-outline" size={20} color="#999" />
                 </TouchableOpacity>
               </View>

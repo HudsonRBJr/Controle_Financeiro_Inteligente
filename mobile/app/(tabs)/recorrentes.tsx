@@ -24,6 +24,8 @@ import {
   type TransactionType,
   type RecurrenceFrequency,
 } from "../../lib/recurring-transaction";
+import { trackClick } from "../../lib/metrics";
+import { useScreenMetrics } from "../../lib/screen-metrics";
 
 const TIPOS: { value: TransactionType; label: string }[] = [
   { value: "INCOME", label: "Receita" },
@@ -67,6 +69,7 @@ function todayISO() {
 }
 
 export default function RecorrentesScreen() {
+  useScreenMetrics("screen_recorrentes");
   const [items, setItems] = useState<RecurringTransactionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -124,6 +127,7 @@ export default function RecorrentesScreen() {
     .reduce((s, i) => s + toNum(i.amount), 0);
 
   const openCreateModal = () => {
+    trackClick("recorrentes_open_create_modal");
     setFormTitle("");
     setFormAmount("");
     setFormType("EXPENSE");
@@ -136,6 +140,7 @@ export default function RecorrentesScreen() {
   };
 
   const openEditModal = (item: RecurringTransactionItem) => {
+    trackClick("recorrentes_open_edit_modal", { recurringId: item.id });
     setEditingItem(item);
     setFormTitle(item.title);
     setFormAmount(
@@ -151,6 +156,7 @@ export default function RecorrentesScreen() {
   };
 
   const openDeleteModal = (item: RecurringTransactionItem) => {
+    trackClick("recorrentes_open_delete_modal", { recurringId: item.id });
     setDeletingItem(item);
     setFormError("");
     setDeleteModalVisible(true);
@@ -212,6 +218,7 @@ export default function RecorrentesScreen() {
     setFormLoading(true);
     try {
       await createRecurringTransaction(validated);
+      trackClick("recorrentes_create_success");
       setCreateModalVisible(false);
       fetchItems();
     } catch (e) {
@@ -232,6 +239,7 @@ export default function RecorrentesScreen() {
     setFormLoading(true);
     try {
       await updateRecurringTransaction(editingItem.id, validated);
+      trackClick("recorrentes_update_success", { recurringId: editingItem.id });
       setEditModalVisible(false);
       setEditingItem(null);
       fetchItems();
@@ -249,6 +257,7 @@ export default function RecorrentesScreen() {
     setFormLoading(true);
     try {
       await deleteRecurringTransaction(deletingItem.id);
+      trackClick("recorrentes_delete_success", { recurringId: deletingItem.id });
       setDeleteModalVisible(false);
       setDeletingItem(null);
       fetchItems();

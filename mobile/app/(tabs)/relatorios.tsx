@@ -1,10 +1,22 @@
+import { useState } from "react";
 import {
   StyleSheet,
   Text,
   View,
   ScrollView,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  getExperimentCtr,
+  getExperimentSummary,
+  getExperimentTimeInApp,
+  trackClick,
+  type ExperimentSummaryItem,
+} from "../../lib/metrics";
+import { useScreenMetrics } from "../../lib/screen-metrics";
 
 const TENDENCIA_MENSAL = [
   { mes: "Jan.", receitas: 5500, despesas: 1500 },
@@ -39,6 +51,51 @@ const MAIORES_DESPESAS = [
 ];
 
 export default function RelatoriosScreen() {
+  useScreenMetrics("screen_relatorios");
+  const [experimentId, setExperimentId] = useState("");
+  const [metricsLoading, setMetricsLoading] = useState(false);
+  const [metricsError, setMetricsError] = useState("");
+  const [summary, setSummary] = useState<ExperimentSummaryItem[]>([]);
+  const [totals, setTotals] = useState({
+    impressions: 0,
+    clicks: 0,
+    sessions: 0,
+  });
+
+  const handleLoadMetrics = async () => {
+    const id = experimentId.trim();
+    if (!id) {
+      setMetricsError("Informe o ID do experimento.");
+      return;
+    }
+
+    setMetricsError("");
+    setMetricsLoading(true);
+    trackClick("relatorios_load_metrics_click", { experimentId: id });
+    try {
+      const [ctrRes, timeRes, summaryRes] = await Promise.all([
+        getExperimentCtr(id),
+        getExperimentTimeInApp(id),
+        getExperimentSummary(id),
+      ]);
+
+      setSummary(summaryRes.summary);
+      setTotals({
+        impressions: ctrRes.byVariant.reduce((acc, item) => acc + item.impressions, 0),
+        clicks: ctrRes.byVariant.reduce((acc, item) => acc + item.clicks, 0),
+        sessions: timeRes.byVariant.reduce((acc, item) => acc + item.sessionCount, 0),
+      });
+    } catch (e) {
+      setSummary([]);
+      setTotals({ impressions: 0, clicks: 0, sessions: 0 });
+      setMetricsError(
+        e instanceof Error ? e.message : "Erro ao carregar métricas do experimento."
+      );
+    } finally {
+      setMetricsLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <ScrollView
@@ -138,6 +195,58 @@ export default function RelatoriosScreen() {
               ))}
             </View>
           </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Métricas de Experimento (A/B)</Text>
+          <Text style={styles.metricsHint}>
+            Consulte os endpoints de métricas por ID do experimento.
+          </Text>
+          <TextInput
+            style={styles.metricsInput}
+            placeholder="ID do experimento"
+            placeholderTextColor="#999"
+            value={experimentId}
+            onChangeText={setExperimentId}
+            autoCapitalize="none"
+          />
+          <TouchableOpacity
+            style={styles.metricsButton}
+            onPress={handleLoadMetrics}
+            disabled={metricsLoading}
+          >
+            {metricsLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.metricsButtonText}>Carregar métricas</Text>
+            )}
+          </TouchableOpacity>
+          {metricsError ? (
+            <Text style={styles.metricsError}>{metricsError}</Text>
+          ) : null}
+          {summary.length > 0 ? (
+            <View style={styles.metricsSummaryWrap}>
+              <Text style={styles.metricsTotals}>
+                Impressões: {totals.impressions} • Cliques: {totals.clicks} • Sessões:{" "}
+                {totals.sessions}
+              </Text>
+              {summary.map((item) => (
+                <View key={item.variantId} style={styles.metricsVariantCard}>
+                  <Text style={styles.metricsVariantTitle}>
+                    Variante: {item.variantId}
+                  </Text>
+                  <Text style={styles.metricsVariantText}>
+                    CTR: {(item.ctr.ctr * 100).toFixed(2)}% ({item.ctr.clicks}/
+                    {item.ctr.impressions})
+                  </Text>
+                  <Text style={styles.metricsVariantText}>
+                    Tempo médio por sessão:{" "}
+                    {item.timeInApp.averageSecondsPerSession.toFixed(2)}s
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
         </View>
 
         {/* Maiores Despesas */}
@@ -354,5 +463,62 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
     color: "#C62828",
+  },
+  metricsHint: {
+    fontSize: 13,
+    color: "#546E7A",
+    marginBottom: 10,
+  },
+  metricsInput: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: "#263238",
+    marginBottom: 10,
+  },
+  metricsButton: {
+    backgroundColor: "#1976D2",
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  metricsButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  metricsError: {
+    fontSize: 13,
+    color: "#C62828",
+    marginBottom: 8,
+  },
+  metricsSummaryWrap: {
+    marginTop: 6,
+    gap: 8,
+  },
+  metricsTotals: {
+    fontSize: 13,
+    color: "#37474F",
+    fontWeight: "600",
+  },
+  metricsVariantCard: {
+    backgroundColor: "#F7F9FC",
+    borderRadius: 8,
+    padding: 10,
+  },
+  metricsVariantTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#263238",
+    marginBottom: 4,
+  },
+  metricsVariantText: {
+    fontSize: 12,
+    color: "#546E7A",
   },
 });
