@@ -103,6 +103,189 @@ export const swaggerDocument = {
         },
       },
     },
+    "/categories": {
+      get: {
+        summary: "Listar categorias",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          "200": { description: "Lista de categorias retornada com sucesso" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+      post: {
+        summary: "Criar categoria",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  name: { type: "string", description: "Nome da categoria" },
+                  icon: { type: "string", description: "Ícone da categoria" },
+                  color: { type: "string", description: "Cor da categoria (hex)" },
+                },
+                required: ["name"],
+              },
+            },
+          },
+        },
+        responses: {
+          "201": { description: "Categoria criada com sucesso" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+    },
+    "/categories/{id}": {
+      get: {
+        summary: "Buscar categoria por ID",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          "200": { description: "Categoria encontrada" },
+          "404": { description: "Categoria não encontrada" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+      put: {
+        summary: "Atualizar categoria",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  name: { type: "string", description: "Nome da categoria" },
+                  icon: { type: "string", description: "Ícone da categoria" },
+                  color: { type: "string", description: "Cor da categoria (hex)" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "Categoria atualizada com sucesso" },
+          "404": { description: "Categoria não encontrada" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+      delete: {
+        summary: "Remover categoria",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          "200": { description: "Categoria removida com sucesso" },
+          "404": { description: "Categoria não encontrada" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+    },
+    "/transactions": {
+      get: {
+        summary: "Listar transações",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          "200": { description: "Lista de transações retornada com sucesso" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+      post: {
+        summary: "Criar transação",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  title: { type: "string", description: "Título da transação" },
+                  description: { type: "string", description: "Descrição (opcional)" },
+                  amount: { type: "number", description: "Valor da transação" },
+                  type: {
+                    type: "string",
+                    enum: ["INCOME", "EXPENSE", "TRANSFER"],
+                    description: "Tipo da transação",
+                  },
+                  date: { type: "string", format: "date-time", description: "Data da transação" },
+                  categoryId: { type: "string", description: "ID da categoria (opcional)" },
+                  accountFromId: { type: "string", description: "ID da conta de origem (opcional)" },
+                  accountToId: { type: "string", description: "ID da conta de destino (opcional)" },
+                  creditCardId: { type: "string", description: "ID do cartão (opcional)" },
+                  recurringId: { type: "string", description: "ID da recorrência (opcional)" },
+                },
+                required: ["title", "amount", "type", "date"],
+              },
+            },
+          },
+        },
+        responses: {
+          "201": { description: "Transação criada com sucesso" },
+          "400": { description: "Dados inválidos" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+    },
+    "/transactions/{id}": {
+      get: {
+        summary: "Buscar transação por ID",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          "200": { description: "Transação encontrada" },
+          "404": { description: "Transação não encontrada" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+      put: {
+        summary: "Atualizar transação",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  title: { type: "string", description: "Título da transação" },
+                  description: { type: "string", description: "Descrição (opcional)" },
+                  amount: { type: "number", description: "Valor da transação" },
+                  type: {
+                    type: "string",
+                    enum: ["INCOME", "EXPENSE", "TRANSFER"],
+                    description: "Tipo da transação",
+                  },
+                  date: { type: "string", format: "date-time", description: "Data da transação" },
+                  categoryId: { type: "string", description: "ID da categoria (opcional)" },
+                  accountFromId: { type: "string", description: "ID da conta de origem (opcional)" },
+                  accountToId: { type: "string", description: "ID da conta de destino (opcional)" },
+                  creditCardId: { type: "string", description: "ID do cartão (opcional)" },
+                  recurringId: { type: "string", description: "ID da recorrência (opcional)" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "Transação atualizada com sucesso" },
+          "404": { description: "Transação não encontrada" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+      delete: {
+        summary: "Remover transação",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          "200": { description: "Transação removida com sucesso" },
+          "404": { description: "Transação não encontrada" },
+          "401": { description: "Token ausente ou inválido" },
+        },
+      },
+    },
     "/users": {
       get: {
         summary: "Listar usuários",

@@ -309,8 +309,11 @@
         <a href="#auth">Autenticação (JWT)</a>
         <a href="#swagger">Swagger UI</a>
         <div class="nav-section">Recursos</div>
+        <a href="#configurations">Configurações</a>
         <a href="#users">Usuários</a>
+        <a href="#categories">Categorias</a>
         <a href="#recurring">Transações recorrentes</a>
+        <a href="#transactions">Transações</a>
         <a href="#budgets">Orçamentos</a>
         <a href="#accounts">Contas</a>
         <a href="#credit-cards">Cartões de crédito</a>
@@ -388,6 +391,34 @@
           Para testar a API de forma interativa, use o Swagger em
           <a href="/docs" target="_blank" rel="noopener">/docs</a>.
         </p>
+
+        <h2 id="configurations">Configurações</h2>
+        <p>
+          Configuração geral do app (nome, descrição e versão). É um recurso único
+          e não exige autenticação.
+        </p>
+        <div class="card endpoint-block">
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/configurations</span>
+          </div>
+          <p class="desc">Obter configuração atual do sistema.</p>
+          <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="path">/configurations</span>
+          </div>
+          <p class="desc">Criar configuração (apenas uma é permitida).</p>
+          <pre>{
+  "name": "Controle Financeiro Inteligente",
+  "description": "Sistema para gestão financeira pessoal",
+  "version": "1.0.0"
+}</pre>
+          <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="path">/configurations</span>
+          </div>
+          <p class="desc">Atualizar configuração existente (campos parciais).</p>
+        </div>
 
         <h2 id="users">Usuários</h2>
         <p>Cadastro e gestão de usuários. Apenas <strong>POST /users</strong> é público.</p>
@@ -474,6 +505,49 @@
             <span class="badge auth">requer token</span>
           </div>
           <p class="desc">Remover transação recorrente.</p>
+        </div>
+
+        <h2 id="categories">Categorias (Category)</h2>
+        <p>
+          Categorias para organizar receitas e despesas. Todas as rotas exigem token.
+          Listagem e busca retornam apenas categorias do usuário autenticado.
+        </p>
+        <div class="card endpoint-block">
+          <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="path">/categories</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Criar categoria.</p>
+          <pre>{
+  "name": "Alimentação",
+  "icon": "utensils",
+  "color": "#f97316"
+}</pre>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/categories</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Listar categorias do usuário.</p>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/categories/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Buscar categoria por ID.</p>
+          <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="path">/categories/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Atualizar (name, icon, color — parciais).</p>
+          <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="path">/categories/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Remover categoria.</p>
         </div>
 
         <h2 id="budgets">Orçamentos (Budget)</h2>
@@ -644,6 +718,54 @@
             <span class="badge auth">requer token</span>
           </div>
           <p class="desc">Remover parcela.</p>
+        </div>
+
+        <h2 id="transactions">Transações (Transaction)</h2>
+        <p>
+          Lançamentos financeiros do usuário (receitas, despesas e transferências).
+          Todas as rotas exigem token.
+        </p>
+        <div class="card endpoint-block">
+          <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="path">/transactions</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Criar transação.</p>
+          <pre>{
+  "title": "Compra supermercado",
+  "description": "Compras do mês",
+  "amount": 245.9,
+  "type": "EXPENSE",
+  "date": "2026-03-07T10:00:00.000Z",
+  "categoryId": "uuid-da-categoria",
+  "accountFromId": "uuid-da-conta-origem"
+}</pre>
+          <p><strong>type:</strong> INCOME | EXPENSE | TRANSFER</p>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/transactions</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Listar transações do usuário.</p>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/transactions/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Buscar transação por ID.</p>
+          <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="path">/transactions/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Atualizar (campos parciais).</p>
+          <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="path">/transactions/{id}</span>
+            <span class="badge auth">requer token</span>
+          </div>
+          <p class="desc">Remover transação.</p>
         </div>
 
         <h2 id="experiments">Experimentos A/B</h2>
