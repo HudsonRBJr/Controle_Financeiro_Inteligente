@@ -7,7 +7,6 @@ const controller = new MetricsController();
 
 router.get("/dashboard", controller.getDashboard.bind(controller));
 
-router.use(ensureAuthenticated);
 
 router.post("/events", controller.recordEvent.bind(controller));
 router.get("/experiments/:id/ctr", controller.getCtr.bind(controller));
