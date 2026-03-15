@@ -130,7 +130,7 @@ export default function DashboardMetricasPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/metrics/dashboard?days=${rangeDays}`);
+      const res = await fetch(`http://31.97.168.45:3000/metrics/dashboard?days=${rangeDays}`);
       if (res.status === 401) {
         router.push("/");
         router.refresh();

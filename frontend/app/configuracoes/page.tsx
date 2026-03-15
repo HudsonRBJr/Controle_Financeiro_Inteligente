@@ -29,7 +29,7 @@ export default function ConfiguracoesPage() {
 
   const fetchConfig = async () => {
     try {
-      const res = await fetch("/api/configurations");
+      const res = await fetch("http://31.97.168.45:3000/configurations");
       if (res.status === 401) {
         router.push("/");
         router.refresh();
