@@ -58,7 +58,7 @@ export default function LoginPage() {
             Controle Financeiro
           </h1>
           <p className="mt-2 text-[15px] text-[#666]">
-            Painel de Configuração — Digite a senha para acessar
+            Painel de Configuração — Digite a senha para acessar o sistema de controle financeiro inteligente.
           </p>
         </div>
 
