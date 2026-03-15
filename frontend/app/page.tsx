@@ -58,7 +58,7 @@ export default function LoginPage() {
             Controle Financeiro
           </h1>
           <p className="mt-2 text-[15px] text-[#666]">
-            Painel de Configuração — Digite a senha para acessar o painel de configuração
+            Painel de Configuração — Digite a senha para acessar
           </p>
         </div>
 
