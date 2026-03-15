@@ -44,23 +44,210 @@ O sistema permite que o usuário registre receitas e despesas, organize por cate
 ## 📁 Estrutura do Projeto
 
 ```
-Controle_Fincanceiro_Inteligente/
-├── backend/                 # API REST
+Controle_Financeiro_Inteligente/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml
+├── backend/                              # API REST
+│   ├── .env_example
+│   ├── .gitignore
+│   ├── jest.config.js                    # Configuração dos testes
+│   ├── package.json
+│   ├── package-lock.json
 │   ├── prisma/
-│   │   └── schema.prisma    # Modelos do banco
+│   │   ├── migrations/
+│   │   │   └── 20260227042605_add/
+│   │   │       └── migration.sql
+│   │   └── schema.prisma                 # Modelos do banco
+│   ├── prisma.config.ts
 │   ├── public/
-│   │   └── documentacao.html  # Documentação HTML da API
+│   │   └── documentacao.html             # Documentação HTML da API
 │   ├── postman/
-│   │   └── Controle_Financeiro_Inteligente.postman_collection.json  # Collection para importar no Postman
-│   └── src/
-│       ├── controllers/
-│       ├── services/
-│       ├── routes/
-│       ├── middlewares/
-│       ├── interfaces/
-│       ├── types/
-│       ├── swagger.ts       # Especificação OpenAPI (Swagger)
-│       └── app.ts
+│   │   └── Controle_Financeiro_Inteligente.postman_collection.json
+│   ├── src/
+│   │   ├── __tests__/                    # Testes automatizados
+│   │   │   ├── helpers/
+│   │   │   │   └── test-app.ts
+│   │   │   ├── accounts.routes.test.ts
+│   │   │   ├── app.test.ts
+│   │   │   ├── auth.routes.test.ts
+│   │   │   ├── budgets.routes.test.ts
+│   │   │   ├── categories.routes.test.ts
+│   │   │   ├── configurations.routes.test.ts
+│   │   │   ├── credit-cards.routes.test.ts
+│   │   │   ├── experiments.routes.test.ts
+│   │   │   ├── installments.routes.test.ts
+│   │   │   ├── metrics.routes.test.ts
+│   │   │   ├── recurring-transactions.routes.test.ts
+│   │   │   ├── transactions.routes.test.ts
+│   │   │   └── users.routes.test.ts
+│   │   ├── controllers/
+│   │   │   ├── account.controller.ts
+│   │   │   ├── auth.controller.ts
+│   │   │   ├── budget.controller.ts
+│   │   │   ├── category.controller.ts
+│   │   │   ├── configuration.controller.ts
+│   │   │   ├── credit-card.controller.ts
+│   │   │   ├── experiment.controller.ts
+│   │   │   ├── installment.controller.ts
+│   │   │   ├── metrics.controller.ts
+│   │   │   ├── recurring-transaction.controller.ts
+│   │   │   ├── transaction.controller.ts
+│   │   │   └── user.controller.ts
+│   │   ├── interfaces/
+│   │   │   ├── account.ts
+│   │   │   ├── auth.ts
+│   │   │   ├── budget.ts
+│   │   │   ├── category.ts
+│   │   │   ├── configuration.ts
+│   │   │   ├── credit-card.ts
+│   │   │   ├── experiment.ts
+│   │   │   ├── installment.ts
+│   │   │   ├── recurring-transaction.ts
+│   │   │   └── transaction.ts
+│   │   ├── middlewares/
+│   │   │   └── ensure-authenticated.ts
+│   │   ├── prisma/
+│   │   │   └── client.ts
+│   │   ├── routes/
+│   │   │   ├── account.routes.ts
+│   │   │   ├── auth.routes.ts
+│   │   │   ├── budget.routes.ts
+│   │   │   ├── category.routes.ts
+│   │   │   ├── configuration.routes.ts
+│   │   │   ├── credit-card.routes.ts
+│   │   │   ├── experiment.routes.ts
+│   │   │   ├── installment.routes.ts
+│   │   │   ├── metrics.routes.ts
+│   │   │   ├── recurring-transaction.routes.ts
+│   │   │   ├── transaction.routes.ts
+│   │   │   └── user.routes.ts
+│   │   ├── services/
+│   │   │   ├── account.service.ts
+│   │   │   ├── auth.service.ts
+│   │   │   ├── budget.service.ts
+│   │   │   ├── category.service.ts
+│   │   │   ├── configuration.service.ts
+│   │   │   ├── credit-card.service.ts
+│   │   │   ├── experiment.service.ts
+│   │   │   ├── installment.service.ts
+│   │   │   ├── metrics.service.ts
+│   │   │   ├── recurring-transaction.service.ts
+│   │   │   ├── transaction.service.ts
+│   │   │   └── user.service.ts
+│   │   ├── types/
+│   │   │   └── swagger-ui-express.d.ts
+│   │   ├── app.ts
+│   │   ├── server.ts
+│   │   └── swagger.ts                     # Especificação OpenAPI (Swagger)
+│   └── tsconfig.json
+├── docs/
+│   └── Trabalho-Lab-Mobile-Fukuta.pdf
+├── frontend/                             # Interface web com Next.js
+│   ├── .gitignore
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── auth/
+│   │   │   │   ├── login/
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── logout/
+│   │   │   │       └── route.ts
+│   │   │   ├── configurations/
+│   │   │   │   └── route.ts
+│   │   │   └── metrics/
+│   │   │       └── dashboard/
+│   │   │           └── route.ts
+│   │   ├── configuracoes/
+│   │   │   └── page.tsx
+│   │   ├── dashboard-metricas/
+│   │   │   └── page.tsx
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── public/
+│   │   ├── file.svg
+│   │   ├── globe.svg
+│   │   ├── next.svg
+│   │   ├── vercel.svg
+│   │   └── window.svg
+│   ├── eslint.config.mjs
+│   ├── middleware.ts
+│   ├── next.config.ts
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── postcss.config.mjs
+│   └── tsconfig.json
+├── mobile/                               # Aplicativo mobile
+│   ├── .env
+│   ├── .gitignore
+│   ├── .vscode/
+│   │   ├── extensions.json
+│   │   └── settings.json
+│   ├── app/
+│   │   ├── (auth)/
+│   │   │   ├── _layout.tsx
+│   │   │   └── login.tsx
+│   │   ├── (tabs)/
+│   │   │   ├── _layout.tsx
+│   │   │   ├── cartao-credito.tsx
+│   │   │   ├── categorias.tsx
+│   │   │   ├── dashboard.tsx
+│   │   │   ├── mais.tsx
+│   │   │   ├── orcamento.tsx
+│   │   │   ├── recorrentes.tsx
+│   │   │   ├── relatorios.tsx
+│   │   │   ├── sair.tsx
+│   │   │   └── transacoes.tsx
+│   │   ├── _layout.tsx
+│   │   └── index.tsx
+│   ├── assets/
+│   │   └── images/
+│   │       ├── android-icon-background.png
+│   │       ├── android-icon-foreground.png
+│   │       ├── android-icon-monochrome.png
+│   │       ├── favicon.png
+│   │       ├── icon.png
+│   │       ├── partial-react-logo.png
+│   │       ├── react-logo.png
+│   │       ├── react-logo@2x.png
+│   │       ├── react-logo@3x.png
+│   │       └── splash-icon.png
+│   ├── components/
+│   │   ├── ui/
+│   │   │   ├── collapsible.tsx
+│   │   │   ├── icon-symbol.ios.tsx
+│   │   │   └── icon-symbol.tsx
+│   │   ├── external-link.tsx
+│   │   ├── haptic-tab.tsx
+│   │   ├── hello-wave.tsx
+│   │   ├── parallax-scroll-view.tsx
+│   │   ├── themed-text.tsx
+│   │   └── themed-view.tsx
+│   ├── constants/
+│   │   └── theme.ts
+│   ├── hooks/
+│   │   ├── use-color-scheme.ts
+│   │   ├── use-color-scheme.web.ts
+│   │   └── use-theme-color.ts
+│   ├── lib/
+│   │   ├── api.ts
+│   │   ├── auth.ts
+│   │   ├── budget.ts
+│   │   ├── category.ts
+│   │   ├── configuration.ts
+│   │   ├── credit-card.ts
+│   │   ├── metrics.ts
+│   │   ├── recurring-transaction.ts
+│   │   └── screen-metrics.ts
+│   ├── scripts/
+│   │   └── reset-project.js
+│   ├── README.md
+│   ├── app.json
+│   ├── eslint.config.js
+│   ├── package.json
+│   ├── package-lock.json
+│   └── tsconfig.json
 └── README.md
 ```
 
