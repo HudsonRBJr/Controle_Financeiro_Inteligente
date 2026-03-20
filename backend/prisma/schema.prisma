@@ -216,8 +216,6 @@ model MetricEvent {
   metadata     Json?
   createdAt    DateTime           @default(now())
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Configuration {
