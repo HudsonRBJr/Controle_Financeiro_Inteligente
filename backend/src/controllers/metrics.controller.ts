@@ -26,7 +26,7 @@ export class MetricsController {
     }
 
     try {
-      const event = await metricsService.recordEvent(authUser!.id, body);
+      const event = await metricsService.recordEvent(body);
       return res.status(201).json(event);
     } catch (error) {
       throw error;
