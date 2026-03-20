@@ -49,7 +49,6 @@ model User {
   creditCards           CreditCard[]
   recurringTransactions RecurringTransaction[]
   experimentAssignments UserExperimentAssignment[]
-  metricEvents          MetricEvent[]
 }
 
 model Account {
