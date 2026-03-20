@@ -2,15 +2,15 @@ import { prisma } from "../prisma/client";
 import { RecordMetricEventInput } from "../interfaces/experiment";
 
 export class MetricsService {
-  async recordEvent(userId: string, data: RecordMetricEventInput) {
+  async recordEvent(data: RecordMetricEventInput) {
     return prisma.metricEvent.create({
       data: {
-        userId,
         eventType: data.eventType as "CLICK" | "IMPRESSION" | "SCREEN_VIEW" | "SESSION_START" | "SESSION_END",
         target: data.target,
         experimentId: data.experimentId,
         variantId: data.variantId,
         metadata: (data.metadata ?? undefined) as any,
+        userId: null as any
       },
       select: {
         id: true,
