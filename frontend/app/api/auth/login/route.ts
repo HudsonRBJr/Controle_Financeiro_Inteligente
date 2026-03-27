@@ -23,10 +23,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const forwardedProto = req.headers.get("x-forwarded-proto");
+    const isHttpsRequest =
+      req.nextUrl.protocol === "https:" ||
+      forwardedProto?.split(",")[0]?.trim() === "https";
+
     const cookieStore = await cookies();
     cookieStore.set(COOKIE_NAME, "authenticated", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isHttpsRequest,
       sameSite: "lax",
       maxAge: COOKIE_MAX_AGE,
       path: "/",
