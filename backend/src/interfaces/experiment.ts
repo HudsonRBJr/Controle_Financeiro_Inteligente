@@ -19,9 +19,6 @@ export interface UpdateExperimentInput {
 export interface RecordMetricEventInput {
   eventType: string;
   target?: string;
-  // Permite registrar evento sem token (ex.: pós-cadastro),
-  // desde que o cliente informe explicitamente o usuário dono do evento.
-  userId?: string;
   experimentId?: string;
   variantId?: string;
   metadata?: Record<string, unknown>;

@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { RecordMetricEventInput } from "../interfaces/experiment";
 import { MetricsService } from "../services/metrics.service";
-import { AuthenticatedUser } from "../interfaces/auth";
 
 const metricsService = new MetricsService();
 
@@ -16,7 +15,6 @@ export class MetricsController {
   }
 
   async recordEvent(req: Request, res: Response) {
-    const authUser = (req as any).user as AuthenticatedUser | undefined;
     const body = req.body as RecordMetricEventInput;
 
     if (!body.eventType || !VALID_EVENT_TYPES.includes(body.eventType)) {
@@ -25,16 +23,8 @@ export class MetricsController {
       });
     }
 
-    const userId = authUser?.id ?? body.userId;
-    if (!userId) {
-      return res.status(400).json({
-        message:
-          "Usuário não identificado. Envie token de autenticação ou informe userId no body.",
-      });
-    }
-
     try {
-      const event = await metricsService.recordEvent(userId, body);
+      const event = await metricsService.recordEvent(body);
       return res.status(201).json(event);
     } catch (error) {
       throw error;

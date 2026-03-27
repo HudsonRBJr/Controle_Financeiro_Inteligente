@@ -73,6 +73,7 @@ function formatDuration(seconds: number) {
 }
 
 export default function DashboardMetricasPage() {
+  const BACKEND_URL = process.env.BACKEND_URL ?? "http://31.97.168.45:3000"; 
   const router = useRouter();
   const [days, setDays] = useState(30);
   const [loading, setLoading] = useState(true);
@@ -130,7 +131,7 @@ export default function DashboardMetricasPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`http://31.97.168.45:3000/metrics/dashboard?days=${rangeDays}`);
+      const res = await fetch(`${BACKEND_URL}/metrics/dashboard?days=${rangeDays}`);
       if (res.status === 401) {
         router.push("/");
         router.refresh();

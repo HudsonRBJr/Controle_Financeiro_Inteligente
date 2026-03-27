@@ -1,7 +1,7 @@
 /// <reference path="./types/swagger-ui-express.d.ts" />
 import path from "path";
 import express from "express";
-import cors from "cors";
+import cors, { CorsOptions } from "cors";
 import swaggerUi from "swagger-ui-express";
 import userRoutes from "./routes/user.routes";
 import recurringTransactionRoutes from "./routes/recurring-transaction.routes";
@@ -19,7 +19,19 @@ import { swaggerDocument } from "./swagger";
 
 export const app = express();
 
-app.use(cors());
+const corsOptions: CorsOptions = {
+  origin(origin, callback) {
+    // Aceita qualquer origem, incluindo requisições sem Origin
+    // (curl, Postman, apps nativos).
+    return callback(null, true);
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 app.use(express.json());
 
 app.use("/auth", authRoutes);

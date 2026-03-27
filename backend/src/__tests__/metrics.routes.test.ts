@@ -14,23 +14,18 @@ describe("Metrics routes", () => {
     expect(response.status).not.toBe(401);
   });
 
-  it("allows /metrics/events without auth but requires user identification", async () => {
+  it("allows /metrics/events without auth and without userId", async () => {
     const record = await request(app).post("/metrics/events").send({ eventType: "CLICK" });
-
-    expect(record.status).toBe(400);
-    expect(record.body).toEqual({
-      message:
-        "Usuário não identificado. Envie token de autenticação ou informe userId no body.",
-    });
+    expect(record.status).not.toBe(401);
   });
 
-  it("requires auth for protected experiment metrics endpoints", async () => {
+  it("keeps experiment metrics endpoints public", async () => {
     const ctr = await request(app).get("/metrics/experiments/test-id/ctr");
     const timeInApp = await request(app).get("/metrics/experiments/test-id/time-in-app");
     const summary = await request(app).get("/metrics/experiments/test-id/summary");
 
-    expect(ctr.status).toBe(401);
-    expect(timeInApp.status).toBe(401);
-    expect(summary.status).toBe(401);
+    expect(ctr.status).not.toBe(401);
+    expect(timeInApp.status).not.toBe(401);
+    expect(summary.status).not.toBe(401);
   });
 });

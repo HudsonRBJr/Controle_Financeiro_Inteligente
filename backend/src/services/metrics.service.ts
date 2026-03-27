@@ -1,16 +1,23 @@
 import { prisma } from "../prisma/client";
 import { RecordMetricEventInput } from "../interfaces/experiment";
 
+type MetricEventLite = {
+  id: string;
+  createdAt: Date;
+  eventType: string;
+  target: string | null;
+  metadata: unknown;
+};
+
 export class MetricsService {
-  async recordEvent(userId: string, data: RecordMetricEventInput) {
+  async recordEvent(data: RecordMetricEventInput) {
     return prisma.metricEvent.create({
       data: {
-        userId,
-        eventType: data.eventType as "CLICK" | "IMPRESSION" | "SCREEN_VIEW" | "SESSION_START" | "SESSION_END",
-        target: data.target,
-        experimentId: data.experimentId,
-        variantId: data.variantId,
-        metadata: (data.metadata ?? undefined) as any,
+        eventType: data.eventType as any,
+        target: data.target ?? null,
+        experimentId: data.experimentId ?? null,
+        variantId: data.variantId ?? null,
+        ...(data.metadata !== undefined ? { metadata: data.metadata as any } : {}),
       },
       select: {
         id: true,
@@ -51,30 +58,36 @@ export class MetricsService {
         experimentId,
         eventType: { in: ["SESSION_START", "SESSION_END"] },
       },
-      select: { eventType: true, variantId: true, metadata: true, userId: true, createdAt: true },
+      select: {
+        eventType: true,
+        variantId: true,
+        metadata: true,
+        createdAt: true,
+      },
       orderBy: { createdAt: "asc" },
     });
 
+    // Sem userId: pareamento simplificado por variante na ordem temporal.
     const durationsByVariant: Record<string, number[]> = {};
-    const lastStartByUser: Record<string, { variantId: string | null; at: Date }> = {};
+    const startsByVariant: Record<string, Date[]> = {};
 
     for (const e of sessions) {
       const v = e.variantId ?? "none";
       if (!durationsByVariant[v]) durationsByVariant[v] = [];
+      if (!startsByVariant[v]) startsByVariant[v] = [];
 
       if (e.eventType === "SESSION_START") {
-        lastStartByUser[e.userId] = { variantId: e.variantId, at: e.createdAt };
+        startsByVariant[v].push(e.createdAt);
       } else if (e.eventType === "SESSION_END") {
-        const start = lastStartByUser[e.userId];
+        const start = startsByVariant[v].shift();
         if (start) {
           const meta = e.metadata as { durationSeconds?: number } | null;
           const durationSeconds =
             typeof meta?.durationSeconds === "number"
               ? meta.durationSeconds
-              : (e.createdAt.getTime() - start.at.getTime()) / 1000;
+              : (e.createdAt.getTime() - start.getTime()) / 1000;
           durationsByVariant[v].push(durationSeconds);
         }
-        delete lastStartByUser[e.userId];
       }
     }
 
@@ -117,7 +130,7 @@ export class MetricsService {
     const since = new Date();
     since.setDate(since.getDate() - safeDays);
 
-    const events = await prisma.metricEvent.findMany({
+    const events: MetricEventLite[] = await prisma.metricEvent.findMany({
       where: { createdAt: { gte: since } },
       orderBy: { createdAt: "asc" },
       select: {
@@ -125,19 +138,23 @@ export class MetricsService {
         createdAt: true,
         eventType: true,
         target: true,
-        userId: true,
         metadata: true,
       },
     });
 
     const totalEvents = events.length;
-    const activeUsers = new Set(events.map((e) => e.userId)).size;
+    // Sem userId no módulo de métricas, este indicador deixa de existir.
+    const activeUsers = 0;
     const screenViews = events.filter((e) => e.eventType === "SCREEN_VIEW").length;
     const clicks = events.filter((e) => e.eventType === "CLICK").length;
     const screenSessionStarts = events.filter(
       (e) => e.eventType === "SESSION_START" && e.target?.startsWith("screen_")
     );
+    const screenSessionEnds = events.filter(
+      (e) => e.eventType === "SESSION_END" && e.target?.startsWith("screen_")
+    );
     const sessionsStarted = screenSessionStarts.length;
+    const sessionsEnded = screenSessionEnds.length;
 
     const eventsByTypeMap = new Map<string, number>();
     for (const event of events) {
@@ -170,70 +187,37 @@ export class MetricsService {
       screenStats.set(event.target, current);
     }
 
-    const startsByUser = new Map<
-      string,
-      Array<{
-        createdAt: Date;
-        target: string;
-      }>
-    >();
-
-    for (const start of screenSessionStarts) {
-      const target = start.target!;
-      const current = startsByUser.get(start.userId) ?? [];
-      current.push({ createdAt: start.createdAt, target });
-      startsByUser.set(start.userId, current);
-    }
-
     const sessionEndsByDate = new Map<string, number>();
-    let derivedSessionsEnded = 0;
-    let derivedDurationTotal = 0;
+    let durationTotal = 0;
+    let durationCount = 0;
 
-    for (const userStarts of startsByUser.values()) {
-      userStarts.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-      let previous: { createdAt: Date; target: string } | null = null;
-
-      for (const currentStart of userStarts) {
-        if (!previous) {
-          previous = currentStart;
-          continue;
-        }
-
-        if (previous.target !== currentStart.target) {
-          const durationSeconds =
-            (currentStart.createdAt.getTime() - previous.createdAt.getTime()) / 1000;
-
-          if (durationSeconds > 0) {
-            derivedSessionsEnded++;
-            derivedDurationTotal += durationSeconds;
-
-            const stats = screenStats.get(previous.target) ?? {
-              views: 0,
-              sessions: 0,
-              durationTotal: 0,
-              durationCount: 0,
-            };
-            stats.durationTotal += durationSeconds;
-            stats.durationCount++;
-            screenStats.set(previous.target, stats);
-
-            const endDate = currentStart.createdAt.toISOString().slice(0, 10);
-            sessionEndsByDate.set(
-              endDate,
-              (sessionEndsByDate.get(endDate) ?? 0) + 1
-            );
-          }
-        }
-
-        previous = currentStart;
+    for (const end of screenSessionEnds) {
+      const meta = end.metadata as { durationSeconds?: number } | null;
+      if (typeof meta?.durationSeconds === "number" && meta.durationSeconds >= 0) {
+        durationTotal += meta.durationSeconds;
+        durationCount++;
       }
+
+      if (end.target) {
+        const stats = screenStats.get(end.target) ?? {
+          views: 0,
+          sessions: 0,
+          durationTotal: 0,
+          durationCount: 0,
+        };
+        if (typeof meta?.durationSeconds === "number" && meta.durationSeconds >= 0) {
+          stats.durationTotal += meta.durationSeconds;
+          stats.durationCount++;
+        }
+        screenStats.set(end.target, stats);
+      }
+
+      const endDate = end.createdAt.toISOString().slice(0, 10);
+      sessionEndsByDate.set(endDate, (sessionEndsByDate.get(endDate) ?? 0) + 1);
     }
 
-    const sessionsEnded = derivedSessionsEnded;
     const avgSessionSeconds =
-      derivedSessionsEnded > 0
-        ? Math.round((derivedDurationTotal / derivedSessionsEnded) * 100) / 100
-        : 0;
+      durationCount > 0 ? Math.round((durationTotal / durationCount) * 100) / 100 : 0;
 
     const topScreens = Array.from(screenStats.entries())
       .map(([screen, stats]) => ({
@@ -314,7 +298,6 @@ export class MetricsService {
         createdAt: event.createdAt,
         eventType: event.eventType,
         target: event.target,
-        userId: event.userId,
         metadata: event.metadata,
       }));
 
