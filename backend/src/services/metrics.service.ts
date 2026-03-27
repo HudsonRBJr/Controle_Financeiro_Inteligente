@@ -2,15 +2,15 @@ import { prisma } from "../prisma/client";
 import { RecordMetricEventInput } from "../interfaces/experiment";
 
 export class MetricsService {
-  async recordEvent(data: RecordMetricEventInput) {
+  async recordEvent(userId: string, data: RecordMetricEventInput) {
     return prisma.metricEvent.create({
       data: {
+        userId,
         eventType: data.eventType as "CLICK" | "IMPRESSION" | "SCREEN_VIEW" | "SESSION_START" | "SESSION_END",
         target: data.target,
         experimentId: data.experimentId,
         variantId: data.variantId,
         metadata: (data.metadata ?? undefined) as any,
-        userId: null as any
       },
       select: {
         id: true,
@@ -125,12 +125,13 @@ export class MetricsService {
         createdAt: true,
         eventType: true,
         target: true,
+        userId: true,
         metadata: true,
       },
     });
 
     const totalEvents = events.length;
-    const activeUsers = 3;
+    const activeUsers = new Set(events.map((e) => e.userId)).size;
     const screenViews = events.filter((e) => e.eventType === "SCREEN_VIEW").length;
     const clicks = events.filter((e) => e.eventType === "CLICK").length;
     const screenSessionStarts = events.filter(
@@ -179,6 +180,9 @@ export class MetricsService {
 
     for (const start of screenSessionStarts) {
       const target = start.target!;
+      const current = startsByUser.get(start.userId) ?? [];
+      current.push({ createdAt: start.createdAt, target });
+      startsByUser.set(start.userId, current);
     }
 
     const sessionEndsByDate = new Map<string, number>();
@@ -310,6 +314,7 @@ export class MetricsService {
         createdAt: event.createdAt,
         eventType: event.eventType,
         target: event.target,
+        userId: event.userId,
         metadata: event.metadata,
       }));
 

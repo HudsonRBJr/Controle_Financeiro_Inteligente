@@ -25,8 +25,16 @@ export class MetricsController {
       });
     }
 
+    const userId = authUser?.id ?? body.userId;
+    if (!userId) {
+      return res.status(400).json({
+        message:
+          "Usuário não identificado. Envie token de autenticação ou informe userId no body.",
+      });
+    }
+
     try {
-      const event = await metricsService.recordEvent(body);
+      const event = await metricsService.recordEvent(userId, body);
       return res.status(201).json(event);
     } catch (error) {
       throw error;
