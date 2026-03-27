@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-const BACKEND_URL = process.env.BACKEND_URL ?? "http://31.97.168.45:3000"; 
 
 type Configuration = {
   id: string;
@@ -30,7 +29,9 @@ export default function ConfiguracoesPage() {
 
   const fetchConfig = async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/configurations`);
+      const res = await fetch("/api/configurations", {
+        cache: "no-store",
+      });
       if (res.status === 401) {
         router.push("/");
         router.refresh();
