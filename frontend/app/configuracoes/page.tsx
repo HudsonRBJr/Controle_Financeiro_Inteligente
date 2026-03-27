@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-// const BACKEND_URL = process.env.BACKEND_URL ?? "http://31.97.168.45:3000";
-const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:3000";
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://31.97.168.45:3000"; 
 
 type Configuration = {
   id: string;
