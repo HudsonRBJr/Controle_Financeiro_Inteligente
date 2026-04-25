@@ -16,6 +16,13 @@ const transactionSelect = {
   userId: true,
 
   categoryId: true,
+  category: {
+    select: {
+      id: true,
+      name: true,
+      color: true,
+    },
+  },
   accountFromId: true,
   accountToId: true,
   creditCardId: true,

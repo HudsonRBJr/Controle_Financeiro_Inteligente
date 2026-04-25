@@ -1,66 +1,117 @@
+import { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   Text,
   View,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { trackClick } from "../../lib/metrics";
 import { useScreenMetrics } from "../../lib/screen-metrics";
+import { getTransactions, type Transaction } from "../../lib/transaction";
 
-const CARDS = [
-  {
-    title: "Saldo Total",
-    value: "R$ 3500.00",
-    icon: "account-balance-wallet" as const,
-    iconBg: "#E3F2FD",
-    trend: null,
-  },
-  {
-    title: "Receitas",
-    value: "R$ 5800.00",
-    icon: "trending-up" as const,
-    iconBg: "#E8F5E9",
-    trend: "+ 12.5%",
-    trendUp: true,
-  },
-  {
-    title: "Despesas",
-    value: "R$ 2300.00",
-    icon: "trending-down" as const,
-    iconBg: "#FCE4EC",
-    trend: "- 8.2%",
-    trendUp: false,
-  },
-  {
-    title: "Economia",
-    value: "60.3%",
-    icon: "savings" as const,
-    iconBg: "#F3E5F5",
-    trend: null,
-  },
+const CATEGORY_COLORS = [
+  "#4CAF50", "#2196F3", "#9C27B0", "#FF9800", "#F44336",
+  "#00BCD4", "#E91E63", "#8BC34A", "#FF5722", "#607D8B",
 ];
 
-const CATEGORIAS = [
-  { label: "Moradia", percent: 52, color: "#4CAF50" },
-  { label: "Alimentação", percent: 19, color: "#2196F3" },
-  { label: "Saúde", percent: 13, color: "#9C27B0" },
-  { label: "Lazer", percent: 7, color: "#FF9800" },
-  { label: "Transporte", percent: 9, color: "#F44336" },
-];
-
-const TRANSACOES = [
-  { id: "1", nome: "Salário mensal", categoria: "Salário", data: "04 de fev. de 2026", valor: 5000, tipo: "entrada" as const },
-  { id: "2", nome: "Supermercado", categoria: "Alimentação", data: "04 de fev. de 2026", valor: -450, tipo: "saida" as const },
-  { id: "3", nome: "Combustível", categoria: "Transporte", data: "07 de fev. de 2026", valor: -200, tipo: "saida" as const },
-  { id: "4", nome: "Aluguel", categoria: "Moradia", data: "31 de jan. de 2026", valor: -1200, tipo: "saida" as const },
-  { id: "5", nome: "Projeto web", categoria: "Freelance", data: "09 de fev. de 2026", valor: 800, tipo: "entrada" as const },
-];
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
 
 export default function DashboardScreen() {
   useScreenMetrics("screen_dashboard");
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getTransactions();
+      setTransactions(data);
+    } catch {
+      setTransactions([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const income = transactions
+    .filter((t) => t.type === "INCOME")
+    .reduce((sum, t) => sum + Number(t.amount), 0);
+  const expense = transactions
+    .filter((t) => t.type === "EXPENSE")
+    .reduce((sum, t) => sum + Number(t.amount), 0);
+  const balance = income - expense;
+  const savingsRate = income > 0 ? ((income - expense) / income) * 100 : 0;
+
+  const cards = [
+    {
+      title: "Saldo Total",
+      value: `R$ ${balance.toFixed(2)}`,
+      icon: "account-balance-wallet" as const,
+      iconBg: "#E3F2FD",
+    },
+    {
+      title: "Receitas",
+      value: `R$ ${income.toFixed(2)}`,
+      icon: "trending-up" as const,
+      iconBg: "#E8F5E9",
+    },
+    {
+      title: "Despesas",
+      value: `R$ ${expense.toFixed(2)}`,
+      icon: "trending-down" as const,
+      iconBg: "#FCE4EC",
+    },
+    {
+      title: "Economia",
+      value: `${savingsRate.toFixed(1)}%`,
+      icon: "savings" as const,
+      iconBg: "#F3E5F5",
+    },
+  ];
+
+  const expenseTransactions = transactions.filter((t) => t.type === "EXPENSE");
+  const totalExpense = expenseTransactions.reduce((sum, t) => sum + Number(t.amount), 0);
+
+  const categoryMap = new Map<string, { label: string; value: number; color: string }>();
+  expenseTransactions.forEach((t) => {
+    const key = t.category?.id ?? "sem-categoria";
+    const label = t.category?.name ?? "Outros";
+    const existing = categoryMap.get(key);
+    if (existing) {
+      existing.value += Number(t.amount);
+    } else {
+      const colorIndex = categoryMap.size % CATEGORY_COLORS.length;
+      categoryMap.set(key, {
+        label,
+        value: Number(t.amount),
+        color: t.category?.color ?? CATEGORY_COLORS[colorIndex],
+      });
+    }
+  });
+
+  const categorias = Array.from(categoryMap.values())
+    .map((cat) => ({
+      ...cat,
+      percent: totalExpense > 0 ? Math.round((cat.value / totalExpense) * 100) : 0,
+    }))
+    .sort((a, b) => b.percent - a.percent)
+    .slice(0, 5);
+
+  const recentTransactions = transactions.slice(0, 5);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -84,91 +135,114 @@ export default function DashboardScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Cards */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.cardsRow}
-        >
-          {CARDS.map((card) => (
-            <View key={card.title} style={styles.card}>
-              <View style={[styles.cardIconWrap, { backgroundColor: card.iconBg }]}>
-                <MaterialIcons name={card.icon} size={24} color="#333" />
-              </View>
-              <Text style={styles.cardTitle}>{card.title}</Text>
-              <Text style={styles.cardValue}>{card.value}</Text>
-              {card.trend && (
-                <View style={styles.trendRow}>
-                  <MaterialIcons
-                    name={card.trendUp ? "trending-up" : "trending-down"}
-                    size={14}
-                    color={card.trendUp ? "#2E7D32" : "#C62828"}
-                  />
-                  <Text style={[styles.trendText, card.trendUp ? styles.trendUp : styles.trendDown]}>
-                    {card.trend}
-                  </Text>
-                </View>
-              )}
-            </View>
-          ))}
-        </ScrollView>
-
-        {/* Duas colunas: gráfico + transações */}
-        <View style={styles.twoCols}>
-          {/* Despesas por categoria */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Despesas por Categoria</Text>
-            <View style={styles.pieContainer}>
-              {CATEGORIAS.map((cat) => (
-                <View key={cat.label} style={styles.catRow}>
-                  <View style={[styles.catDot, { backgroundColor: cat.color }]} />
-                  <Text style={styles.catLabel}>{cat.label}</Text>
-                  <Text style={styles.catPercent}>{cat.percent}%</Text>
+        {loading ? (
+          <ActivityIndicator size="large" color="#1976D2" style={styles.loader} />
+        ) : (
+          <>
+            {/* Cards */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.cardsRow}
+            >
+              {cards.map((card) => (
+                <View key={card.title} style={styles.card}>
+                  <View style={[styles.cardIconWrap, { backgroundColor: card.iconBg }]}>
+                    <MaterialIcons name={card.icon} size={24} color="#333" />
+                  </View>
+                  <Text style={styles.cardTitle}>{card.title}</Text>
+                  <Text style={styles.cardValue}>{card.value}</Text>
                 </View>
               ))}
-            </View>
-            <View style={styles.legendBars}>
-              {CATEGORIAS.map((cat) => (
-                <View
-                  key={cat.label}
-                  style={[
-                    styles.legendBar,
-                    { width: `${cat.percent}%`, backgroundColor: cat.color },
-                  ]}
-                />
-              ))}
-            </View>
-          </View>
+            </ScrollView>
 
-          {/* Transações recentes */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Transações Recentes</Text>
-            {TRANSACOES.map((t) => (
-              <View key={t.id} style={styles.transacaoCard}>
-                <View style={[styles.transacaoIconWrap, t.tipo === "entrada" ? styles.entradaIcon : styles.saidaIcon]}>
-                  <MaterialIcons
-                    name={t.tipo === "entrada" ? "trending-up" : "trending-down"}
-                    size={18}
-                    color={t.tipo === "entrada" ? "#2E7D32" : "#C62828"}
-                  />
-                </View>
-                <View style={styles.transacaoInfo}>
-                  <Text style={styles.transacaoNome}>{t.nome}</Text>
-                  <Text style={styles.transacaoMeta}>{t.categoria} • {t.data}</Text>
-                </View>
-                <Text style={[styles.transacaoValor, t.tipo === "entrada" ? styles.valorEntrada : styles.valorSaida]}>
-                  {t.tipo === "entrada" ? "+" : "-"} R$ {Math.abs(t.valor).toFixed(2)}
-                </Text>
-                <TouchableOpacity
-                  style={styles.transacaoDelete}
-                  onPress={() => trackClick("dashboard_transacao_delete_click", { transactionId: t.id })}
-                >
-                  <MaterialIcons name="delete-outline" size={20} color="#999" />
-                </TouchableOpacity>
+            {/* Duas colunas: gráfico + transações */}
+            <View style={styles.twoCols}>
+              {/* Despesas por categoria */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Despesas por Categoria</Text>
+                {categorias.length === 0 ? (
+                  <Text style={styles.emptyText}>Nenhuma despesa registrada.</Text>
+                ) : (
+                  <>
+                    <View style={styles.pieContainer}>
+                      {categorias.map((cat) => (
+                        <View key={cat.label} style={styles.catRow}>
+                          <View style={[styles.catDot, { backgroundColor: cat.color }]} />
+                          <Text style={styles.catLabel}>{cat.label}</Text>
+                          <Text style={styles.catPercent}>{cat.percent}%</Text>
+                        </View>
+                      ))}
+                    </View>
+                    <View style={styles.legendBars}>
+                      {categorias.map((cat) => (
+                        <View
+                          key={cat.label}
+                          style={[
+                            styles.legendBar,
+                            { width: `${cat.percent}%`, backgroundColor: cat.color },
+                          ]}
+                        />
+                      ))}
+                    </View>
+                  </>
+                )}
               </View>
-            ))}
-          </View>
-        </View>
+
+              {/* Transações recentes */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Transações Recentes</Text>
+                {recentTransactions.length === 0 ? (
+                  <Text style={styles.emptyText}>Nenhuma transação encontrada.</Text>
+                ) : (
+                  recentTransactions.map((t) => {
+                    const isEntrada = t.type === "INCOME";
+                    return (
+                      <View key={t.id} style={styles.transacaoCard}>
+                        <View
+                          style={[
+                            styles.transacaoIconWrap,
+                            isEntrada ? styles.entradaIcon : styles.saidaIcon,
+                          ]}
+                        >
+                          <MaterialIcons
+                            name={isEntrada ? "trending-up" : "trending-down"}
+                            size={18}
+                            color={isEntrada ? "#2E7D32" : "#C62828"}
+                          />
+                        </View>
+                        <View style={styles.transacaoInfo}>
+                          <Text style={styles.transacaoNome}>{t.title}</Text>
+                          <Text style={styles.transacaoMeta}>
+                            {t.category?.name ?? "Sem categoria"} • {formatDate(t.date)}
+                          </Text>
+                        </View>
+                        <Text
+                          style={[
+                            styles.transacaoValor,
+                            isEntrada ? styles.valorEntrada : styles.valorSaida,
+                          ]}
+                        >
+                          {isEntrada ? "+" : "-"} R$ {Number(t.amount).toFixed(2)}
+                        </Text>
+                        <TouchableOpacity
+                          style={styles.transacaoDelete}
+                          onPress={() =>
+                            trackClick("dashboard_transacao_delete_click", {
+                              transactionId: t.id,
+                            })
+                          }
+                        >
+                          <MaterialIcons name="delete-outline" size={20} color="#999" />
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  })
+                )}
+              </View>
+            </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -185,6 +259,9 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
     paddingBottom: 96,
+  },
+  loader: {
+    marginTop: 40,
   },
   dashboardHeader: {
     flexDirection: "row",
@@ -250,18 +327,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#263238",
   },
-  trendRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginTop: 6,
-  },
-  trendText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  trendUp: { color: "#2E7D32" },
-  trendDown: { color: "#C62828" },
   twoCols: {
     gap: 20,
   },
@@ -281,6 +346,12 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#263238",
     marginBottom: 16,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: "#999",
+    textAlign: "center",
+    paddingVertical: 12,
   },
   pieContainer: {
     gap: 10,

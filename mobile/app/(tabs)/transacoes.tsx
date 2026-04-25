@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -5,24 +6,76 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { trackClick } from "../../lib/metrics";
 import { useScreenMetrics } from "../../lib/screen-metrics";
+import { getTransactions, deleteTransaction, type Transaction } from "../../lib/transaction";
 
-const TRANSACOES = [
-  { id: "1", nome: "Salário mensal", categoria: "Salário", data: "31 de jan. de 2026", valor: 5000, tipo: "entrada" as const },
-  { id: "2", nome: "Supermercado", categoria: "Alimentação", data: "04 de fev. de 2026", valor: -450, tipo: "saida" as const },
-  { id: "3", nome: "Combustível", categoria: "Transporte", data: "07 de fev. de 2026", valor: -200, tipo: "saida" as const },
-  { id: "4", nome: "Aluguel", categoria: "Moradia", data: "31 de jan. de 2026", valor: -1200, tipo: "saida" as const },
-  { id: "5", nome: "Projeto web", categoria: "Freelance", data: "09 de fev. de 2026", valor: 800, tipo: "entrada" as const },
-  { id: "6", nome: "Cinema e restaurante", categoria: "Lazer", data: "11 de fev. de 2026", valor: -150, tipo: "saida" as const },
-  { id: "7", nome: "Plano de saúde", categoria: "Saúde", data: "14 de fev. de 2026", valor: -300, tipo: "saida" as const },
-];
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+type FilterType = "all" | "entrada" | "saida";
 
 export default function TransacoesScreen() {
   useScreenMetrics("screen_transacoes");
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<FilterType>("all");
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getTransactions();
+      setTransactions(data);
+    } catch {
+      setTransactions([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const handleDelete = async (id: string) => {
+    trackClick("transacoes_delete_click", { transactionId: id });
+    try {
+      await deleteTransaction(id);
+      setTransactions((prev) => prev.filter((t) => t.id !== id));
+    } catch {}
+  };
+
+  const cycleFilter = () => {
+    trackClick("transacoes_open_filter_click");
+    setFilter((f) => (f === "all" ? "entrada" : f === "entrada" ? "saida" : "all"));
+  };
+
+  const filterLabel: Record<FilterType, string> = {
+    all: "Todas",
+    entrada: "Entradas",
+    saida: "Saídas",
+  };
+
+  const filtered = transactions.filter((t) => {
+    const matchSearch =
+      t.title.toLowerCase().includes(search.toLowerCase()) ||
+      (t.category?.name ?? "").toLowerCase().includes(search.toLowerCase());
+    const matchFilter =
+      filter === "all" ||
+      (filter === "entrada" && t.type === "INCOME") ||
+      (filter === "saida" && t.type === "EXPENSE");
+    return matchSearch && matchFilter;
+  });
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -54,52 +107,74 @@ export default function TransacoesScreen() {
               style={styles.searchInput}
               placeholder="Buscar transações..."
               placeholderTextColor="#999"
+              value={search}
+              onChangeText={setSearch}
             />
           </View>
-          <TouchableOpacity
-            style={styles.filterWrap}
-            onPress={() => trackClick("transacoes_open_filter_click")}
-          >
+          <TouchableOpacity style={styles.filterWrap} onPress={cycleFilter}>
             <MaterialIcons name="filter-list" size={20} color="#666" />
-            <Text style={styles.filterText}>Todas</Text>
+            <Text style={styles.filterText}>{filterLabel[filter]}</Text>
             <MaterialIcons name="keyboard-arrow-down" size={20} color="#666" />
           </TouchableOpacity>
         </View>
 
         {/* Lista de transações */}
-        <View style={styles.lista}>
-          {TRANSACOES.map((t) => (
-            <View key={t.id} style={styles.transacaoCard}>
-              <View style={[styles.transacaoIconWrap, t.tipo === "entrada" ? styles.entradaIcon : styles.saidaIcon]}>
-                <MaterialIcons
-                  name={t.tipo === "entrada" ? "trending-up" : "trending-down"}
-                  size={20}
-                  color={t.tipo === "entrada" ? "#2E7D32" : "#C62828"}
-                />
-              </View>
-              <View style={styles.transacaoInfo}>
-                <View style={styles.transacaoNomeRow}>
-                  <Text style={styles.transacaoNome} numberOfLines={1}>{t.nome}</Text>
-                  <View style={styles.categoriaPill}>
-                    <Text style={styles.categoriaPillText}>{t.categoria}</Text>
+        {loading ? (
+          <ActivityIndicator size="large" color="#1976D2" style={styles.loader} />
+        ) : filtered.length === 0 ? (
+          <Text style={styles.emptyText}>Nenhuma transação encontrada.</Text>
+        ) : (
+          <View style={styles.lista}>
+            {filtered.map((t) => {
+              const isEntrada = t.type === "INCOME";
+              return (
+                <View key={t.id} style={styles.transacaoCard}>
+                  <View
+                    style={[
+                      styles.transacaoIconWrap,
+                      isEntrada ? styles.entradaIcon : styles.saidaIcon,
+                    ]}
+                  >
+                    <MaterialIcons
+                      name={isEntrada ? "trending-up" : "trending-down"}
+                      size={20}
+                      color={isEntrada ? "#2E7D32" : "#C62828"}
+                    />
+                  </View>
+                  <View style={styles.transacaoInfo}>
+                    <View style={styles.transacaoNomeRow}>
+                      <Text style={styles.transacaoNome} numberOfLines={1}>
+                        {t.title}
+                      </Text>
+                      {t.category && (
+                        <View style={styles.categoriaPill}>
+                          <Text style={styles.categoriaPillText}>{t.category.name}</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={styles.transacaoData}>{formatDate(t.date)}</Text>
+                  </View>
+                  <View style={styles.transacaoRight}>
+                    <Text
+                      style={[
+                        styles.transacaoValor,
+                        isEntrada ? styles.valorEntrada : styles.valorSaida,
+                      ]}
+                    >
+                      {isEntrada ? "+" : "-"} R$ {Number(t.amount).toFixed(2)}
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.transacaoDelete}
+                      onPress={() => handleDelete(t.id)}
+                    >
+                      <MaterialIcons name="delete-outline" size={20} color="#999" />
+                    </TouchableOpacity>
                   </View>
                 </View>
-                <Text style={styles.transacaoData}>{t.data}</Text>
-              </View>
-              <View style={styles.transacaoRight}>
-                <Text style={[styles.transacaoValor, t.tipo === "entrada" ? styles.valorEntrada : styles.valorSaida]}>
-                  {t.tipo === "entrada" ? "+" : "-"} R$ {Math.abs(t.valor).toFixed(2)}
-                </Text>
-                <TouchableOpacity
-                  style={styles.transacaoDelete}
-                  onPress={() => trackClick("transacoes_delete_click", { transactionId: t.id })}
-                >
-                  <MaterialIcons name="delete-outline" size={20} color="#999" />
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
-        </View>
+              );
+            })}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -116,6 +191,15 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
     paddingBottom: 96,
+  },
+  loader: {
+    marginTop: 40,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: "#999",
+    textAlign: "center",
+    marginTop: 40,
   },
   header: {
     flexDirection: "row",
