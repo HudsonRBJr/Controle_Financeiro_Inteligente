@@ -100,6 +100,20 @@ export default function TabsLayout() {
           title: "Sair",
         }}
       />
+      <Tabs.Screen
+        name="contas"
+        options={{
+          href: null,
+          title: "Contas",
+        }}
+      />
+      <Tabs.Screen
+        name="parcelas"
+        options={{
+          href: null,
+          title: "Parcelas",
+        }}
+      />
     </Tabs>
   );
 }
