@@ -73,7 +73,7 @@ function formatDuration(seconds: number) {
 }
 
 export default function DashboardMetricasPage() {
-  const BACKEND_URL = process.env.BACKEND_URL ?? "http://31.97.168.45:3000"; 
+  const BACKEND_URL = process.env.BACKEND_URL ?? "http://2.25.147.37:3000"; 
   const router = useRouter();
   const [days, setDays] = useState(30);
   const [loading, setLoading] = useState(true);
