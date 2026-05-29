@@ -12,15 +12,17 @@ jobs:
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
+
         with:
-          host: 31.97.168.45
+          host: 2.25.147.37
           username: root
           key: ${{ secrets.SSH_KEY }}
 
           script: |
             set -e
 
-            cd ~/Controle_Fincanceiro_Inteligente
+            cd ~/Controle_Financeiro_Inteligente
+
             git pull origin main
 
             echo "BACKEND"
@@ -33,4 +35,5 @@ jobs:
             npm install
             npm run build
 
-            npx pm2 restart all
+            pm2 restart all
+
